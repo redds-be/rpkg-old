@@ -5,12 +5,13 @@
 RPKG Main File
 """
 
-import sys
+from sys import argv
 from utils.log import logger
-from checks.checks import check_root, check_network
+from checks.checks import check_root, check_network, check_deps
 
 
 if __name__ == "__main__":
-    logger(sys.argv)
+    logger(argv)
     check_root()
     check_network()
+    check_deps(argv)
