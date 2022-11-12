@@ -1,5 +1,3 @@
 [MASTER]
 disable=
-    R0801,
-    C0103,
-    C0200,
+    W1203
