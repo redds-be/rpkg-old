@@ -25,9 +25,7 @@ def install(argv):
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
         logging.info(f'Starting the installation of {pkg}')
-        os.system(f'/usr/bin/wget -P /tmp/ '
-                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
         if '-v' in argv:
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py -v')
+            os.system(f'/usr/bin/python3 ./rbuilds/{pkg}.py -v')
         else:
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+            os.system(f'/usr/bin/python3 ./rbuilds/{pkg}.py')
