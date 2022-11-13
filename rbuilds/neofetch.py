@@ -15,8 +15,12 @@ def download(link):
 
 def extract(tarball):
     """ Extract the package """
-    os.chdir('/tmp')
-    os.system(f'/usr/bin/tar -xvf /tmp/{tarball}')
+    os.system(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp')
+
+
+def install(dir_name):
+    os.chdir(f'/tmp/{dir_name}')
+    os.system('make install')
 
 
 if __name__ == "__main__":
@@ -25,5 +29,7 @@ if __name__ == "__main__":
     EXTENSION = 'tar.gz'
     DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
+    EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
     download(DL_LINK)
     extract(ARCHIVE_NAME)
+    install(EXTRACTED_NAME)
