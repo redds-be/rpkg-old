@@ -24,6 +24,13 @@ def uninstall(dir_name):
     os.system('make uninstall')
 
 
+def clean(pkg, tarball, dir_name):
+    """ Clean the package installation process """
+    os.system(f'rm {tarball}')
+    os.system(f'rm -rf {dir_name}')
+    os.system(f'rm {pkg}')
+
+
 if __name__ == "__main__":
     VERSION = '7.1.0'
     PACKAGE = 'neofetch'
@@ -34,3 +41,4 @@ if __name__ == "__main__":
     download(DL_LINK)
     extract(ARCHIVE_NAME)
     uninstall(EXTRACTED_NAME)
+    clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
