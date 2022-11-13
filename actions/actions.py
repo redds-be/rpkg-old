@@ -16,7 +16,7 @@ def take_action(argv):
         pass
     if '-i' in argv:
         install(argv)
-    if '-r' in argv:
+    if '-u' in argv:
         uninstall(argv)
     else:
         logging.error('Invalid arguments')
@@ -44,7 +44,7 @@ def install(argv):
 
 def uninstall(argv):
     """ Uninstall function """
-    to_uninstall = argv[argv.index('-r') + 1:]
+    to_uninstall = argv[argv.index('-u') + 1:]
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
         if '-v' in argv:
