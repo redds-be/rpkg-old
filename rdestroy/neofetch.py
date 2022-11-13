@@ -26,9 +26,9 @@ def uninstall(dir_name):
 
 def clean(pkg, tarball, dir_name):
     """ Clean the package installation process """
-    os.system(f'rm {tarball}')
-    os.system(f'rm -rf {dir_name}')
-    os.system(f'rm {pkg}')
+    os.system(f'rm /tmp/{tarball}')
+    os.system(f'rm -rf /tmp/{dir_name}')
+    os.system(f'rm /tmp/{pkg}')
 
 
 if __name__ == "__main__":
