@@ -29,11 +29,11 @@ def install(argv):
     for pkg in to_install:
         logging.info(f'Starting the installation of {pkg}')
         os.system(f'/usr/bin/wget -P /tmp/ '
-                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
-        os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py >/dev/null 2>&1')
+        os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
         logging.info("Ignore the getcwd error.")
-        logging.info(f'The installation of {pkg} has been a success.')
-    sys.exit()
+        logging.info(f'Installation of {pkg} complete.')
+    sys.exit(f'The installation of {pkg} has been a success.')
 
 
 def uninstall(argv):
@@ -42,8 +42,8 @@ def uninstall(argv):
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
         os.system(f'/usr/bin/wget -P /tmp/ '
-                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
-        os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py >/dev/null 2>&1')
+        os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
         logging.info("Ignore the 'getcwd' error.")
-        logging.info(f'The uninstallation of {pkg} has been a success.')
-    sys.exit()
+        logging.info(f'Uninstallation of {pkg} complete.')
+    sys.exit(f'The uninstallation of {pkg} has been a success.')
