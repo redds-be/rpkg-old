@@ -36,7 +36,7 @@ def install(argv):
 
 def uninstall(argv):
     """ Uninstall function """
-    to_uninstall = argv[argv.index('-i') + 1:]
+    to_uninstall = argv[argv.index('-r') + 1:]
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
         os.system(f'/usr/bin/wget -P /tmp/ '
