@@ -19,6 +19,7 @@ def extract(tarball):
 
 
 def install(dir_name):
+    """ Installs the package """
     os.chdir(f'/tmp/{dir_name}')
     os.system('make install')
 
