@@ -9,22 +9,23 @@ import os
 import logging
 
 
-def download(ver, pkg, ext):
+def download(pkg, link):
     """ Download the package """
     logging.info(f'Downloading {pkg}...')
-    os.system(f'/usr/bin/wget -P /tmp/ '
-              f'https://github.com/dylanaraps/{pkg}/archive/refs/tags/{ver}.{ext}')
+    os.system(f'/usr/bin/wget -P /tmp/ {link}')
 
 
-def extract(ver, pkg, ext):
+def extract(pkg, tarball):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
-    os.system(f'/usr/bin/tar -xvf /tmp/{pkg}-{ver}.{ext}')
+    os.system(f'/usr/bin/tar -xvf /tmp/{tarball}')
 
 
 if __name__ == "__main__":
     VERSION = '7.1.0'
     PACKAGE = 'neofetch'
     EXTENSION = 'tar.gz'
-    download(VERSION, PACKAGE, EXTENSION)
-    extract(VERSION, PACKAGE, EXTENSION)
+    DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
+    ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
+    download(PACKAGE, DL_LINK)
+    extract(PACKAGE, ARCHIVE_NAME)
