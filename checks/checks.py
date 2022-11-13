@@ -35,8 +35,8 @@ def check_network():
 def check_deps(argv):
     """ Checks if the required dependencies are present """
     logging.info('Checking if the dependencies are present.')
-    deps_for_install = ['/usr/bin/bash', '/usr/bin/wget', '/usr/bin/tar']
-    if 'install' in argv:
+    deps_for_install = ['/usr/bin/bash', '/usr/bin/wget', '/usr/bin/tar', '/usr/bin/python3']
+    if '-i' in argv:
         for deps in deps_for_install:
             if os.path.exists(deps):
                 logging.info(f'{deps} is present.')
