@@ -31,7 +31,8 @@ def install(argv):
         os.system(f'/usr/bin/wget -P /tmp/ '
                   f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
-        logging.info(f'Ignore the getcwd error.')
+        logging.info("Ignore the getcwd error.")
+        logging.info(f'The installation of {pkg} has been a success.')
 
 
 def uninstall(argv):
@@ -42,4 +43,6 @@ def uninstall(argv):
         os.system(f'/usr/bin/wget -P /tmp/ '
                   f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
-        logging.info(f'Ignore the getcwd error.')
+        logging.info("Ignore the 'getcwd' error.")
+        logging.info(f'The uninstallation of {pkg} has been a success.')
+
