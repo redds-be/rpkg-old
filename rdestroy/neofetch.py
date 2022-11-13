@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Neofetch rbuild
+Neofetch rdestroy
 """
 
 import os
@@ -18,17 +18,10 @@ def extract(tarball):
     os.system(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp')
 
 
-def install(dir_name):
+def uninstall(dir_name):
     """ Installs the package """
     os.chdir(f'/tmp/{dir_name}')
-    os.system('make install')
-
-
-def clean(pkg, tarball, dir_name):
-    """ Clean the package installation process """
-    os.system(f'rm {tarball}')
-    os.system(f'rm -rf {dir_name}')
-    os.system(f'rm {pkg}')
+    os.system('make uninstall')
 
 
 if __name__ == "__main__":
@@ -40,5 +33,4 @@ if __name__ == "__main__":
     EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
     download(DL_LINK)
     extract(ARCHIVE_NAME)
-    install(EXTRACTED_NAME)
-    clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
+    uninstall(EXTRACTED_NAME)

@@ -4,6 +4,7 @@
 """
 Actions taken in function of the options
 """
+
 import os
 import sys
 import logging
@@ -15,6 +16,8 @@ def take_action(argv):
         pass
     if '-i' in argv:
         install(argv)
+    if 'r' in argv:
+        uninstall(argv)
     else:
         logging.error('Invalid arguments')
         sys.exit("Argument not recognized use -h to print an help message.")
@@ -27,7 +30,13 @@ def install(argv):
         logging.info(f'Starting the installation of {pkg}')
         os.system(f'/usr/bin/wget -P /tmp/ '
                   f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
-        if '-v' in argv:
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py -v')
-        else:
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+        os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+
+
+def uninstall(argv):
+    to_uninstall = argv[argv.index('-r') + 1:]
+    for pkg in to_uninstall:
+        logging.info(f'Starting the uninstallation of {pkg}')
+        os.system(f'/usr/bin/wget -P /tmp/ '
+                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
+        os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
