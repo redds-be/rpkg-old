@@ -13,9 +13,9 @@ from actions.actions import take_action
 
 def main():
     logger(argv)
-    # check_root()
+    check_root()
     check_network()
-    # check_deps(argv)
+    check_deps(argv)
     take_action(argv)
 
 

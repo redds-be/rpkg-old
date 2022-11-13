@@ -25,5 +25,6 @@ def install(argv):
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
         logging.info(f'Installing : {pkg}')
-        os.system(f'/usr/bin/wget -o /tmp/ https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
+        os.system(f'/usr/bin/wget -o /tmp/ '
+                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
