@@ -28,7 +28,7 @@ def clean(pkg, tarball, dir_name):
     """ Clean the package installation process """
     os.system(f'rm /tmp/{tarball}')
     os.system(f'rm -rf /tmp/{dir_name}')
-    os.system(f'rm /tmp/{pkg}')
+    os.system(f'rm /tmp/{pkg}.py')
 
 
 if __name__ == "__main__":
