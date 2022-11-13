@@ -31,12 +31,15 @@ def install(argv):
         os.system(f'/usr/bin/wget -P /tmp/ '
                   f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+        logging.info(f'Ignore the getcwd error.')
 
 
 def uninstall(argv):
-    to_uninstall = argv[argv.index('-r') + 1:]
+    """ Uninstall function """
+    to_uninstall = argv[argv.index('-i') + 1:]
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
         os.system(f'/usr/bin/wget -P /tmp/ '
                   f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+        logging.info(f'Ignore the getcwd error.')

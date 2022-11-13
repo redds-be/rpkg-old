@@ -15,7 +15,7 @@ def download(link):
 
 def extract(tarball):
     """ Extract the package """
-    os.system(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp')
+    os.system(f'/usr/bin/tar -xf /tmp/{tarball} -C /tmp')
 
 
 def install(dir_name):
