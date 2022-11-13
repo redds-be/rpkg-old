@@ -7,7 +7,6 @@ Neofetch rbuild
 
 import os
 import logging
-import sys
 
 
 def download(ver, pkg, ext):
@@ -24,8 +23,8 @@ def extract(ver, pkg, ext):
 
 
 if __name__ == "__main__":
-    version = '7.1.0'
-    package = 'neofetch'
-    extension = 'tar.gz'
-    download(version, package, extension)
-    extract(version, package, extension)
+    VERSION = '7.1.0'
+    PACKAGE = 'neofetch'
+    EXTENSION = 'tar.gz'
+    download(VERSION, PACKAGE, EXTENSION)
+    extract(VERSION, PACKAGE, EXTENSION)
