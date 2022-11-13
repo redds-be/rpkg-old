@@ -26,6 +26,6 @@ def extract(ver, pkg, ext):
 if __name__ == "__main__":
     version = '7.1.0'
     package = 'neofetch'
-    extension = '.tar.gz'
+    extension = 'tar.gz'
     download(version, package, extension)
     extract(version, package, extension)
