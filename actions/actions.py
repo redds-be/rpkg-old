@@ -37,9 +37,9 @@ def install(argv):
                       f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py '
                       f'>/dev/null 2>&1')
             os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
-        logging.info("Ignore the getcwd error.")
+        logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Installation of {pkg} complete.')
-    sys.exit(f'The installation has been a success.')
+    sys.exit('The installation has been a success.')
 
 
 def uninstall(argv):
@@ -58,4 +58,4 @@ def uninstall(argv):
             os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
         logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Uninstallation of {pkg} complete.')
-    sys.exit(f'The uninstallation has been a success.')
+    sys.exit('The uninstallation has been a success.')
