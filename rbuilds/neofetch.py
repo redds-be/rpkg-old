@@ -7,7 +7,6 @@ Neofetch rbuild
 
 import os
 import logging
-from utils.log import logger
 from sys import argv
 
 
@@ -21,6 +20,21 @@ def extract(pkg, tarball):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
     os.system(f'/usr/bin/tar -xvf /tmp/{tarball}')
+
+
+def logger(argv):
+    """ RPKG log handler (logging has a way of doing it, but it's too much for my use) """
+    if '-v' in argv:
+        logging.basicConfig(encoding='utf-8',
+                            level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename='./rpkg.log',
+                            encoding='utf-8',
+                            level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
 if __name__ == "__main__":
