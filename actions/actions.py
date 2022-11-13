@@ -16,7 +16,7 @@ def take_action(argv):
         pass
     if '-i' in argv:
         install(argv)
-    if 'r' in argv:
+    if '-r' in argv:
         uninstall(argv)
     else:
         logging.error('Invalid arguments')
