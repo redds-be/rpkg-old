@@ -5,6 +5,6 @@
 Neofetch rbuild
 """
 
-import os
+# import os
 
 print('ok')
