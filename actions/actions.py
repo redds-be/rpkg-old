@@ -33,6 +33,7 @@ def install(argv):
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
         logging.info("Ignore the getcwd error.")
         logging.info(f'The installation of {pkg} has been a success.')
+    sys.exit()
 
 
 def uninstall(argv):
@@ -45,4 +46,4 @@ def uninstall(argv):
         os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
         logging.info("Ignore the 'getcwd' error.")
         logging.info(f'The uninstallation of {pkg} has been a success.')
-
+    sys.exit()
