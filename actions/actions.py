@@ -28,7 +28,7 @@ def install(argv):
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
         logging.info(f'Starting the installation of {pkg}')
-        if '-v' not in argv:
+        if '-v' in argv:
             os.system(f'/usr/bin/wget -P /tmp/ '
                       f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
             os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
@@ -47,7 +47,7 @@ def uninstall(argv):
     to_uninstall = argv[argv.index('-r') + 1:]
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
-        if '-v' not in argv:
+        if '-v' in argv:
             os.system(f'/usr/bin/wget -P /tmp/ '
                       f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
             os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
