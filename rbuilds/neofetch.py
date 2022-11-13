@@ -8,14 +8,14 @@ Neofetch rbuild
 import os
 
 
-def download(pkg, link):
+def download(link):
     """ Download the package """
     os.system(f'/usr/bin/wget -P /tmp/ {link}')
 
 
-def extract(pkg, tarball):
+def extract(tarball):
     """ Extract the package """
-    os.system(f'/usr/bin/tar -xvf /tmp/{tarball}')
+    os.system(f'cd && /usr/bin/tar -xvf /tmp/{tarball}')
 
 
 if __name__ == "__main__":
@@ -24,5 +24,5 @@ if __name__ == "__main__":
     EXTENSION = 'tar.gz'
     DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
-    download(PACKAGE, DL_LINK)
-    extract(PACKAGE, ARCHIVE_NAME)
+    download(DL_LINK)
+    extract(ARCHIVE_NAME)
