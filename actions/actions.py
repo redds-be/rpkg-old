@@ -28,12 +28,18 @@ def install(argv):
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
         logging.info(f'Starting the installation of {pkg}')
-        os.system(f'/usr/bin/wget -P /tmp/ '
-                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py >/dev/null 2>&1')
-        os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
+        if '-v' not in argv:
+            os.system(f'/usr/bin/wget -P /tmp/ '
+                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
+            os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+        else:
+            os.system(f'/usr/bin/wget -P /tmp/ '
+                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py '
+                      f'>/dev/null 2>&1')
+            os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
         logging.info("Ignore the getcwd error.")
         logging.info(f'Installation of {pkg} complete.')
-    sys.exit(f'The installation of {pkg} has been a success.')
+    sys.exit(f'The installation has been a success.')
 
 
 def uninstall(argv):
@@ -41,9 +47,15 @@ def uninstall(argv):
     to_uninstall = argv[argv.index('-r') + 1:]
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
-        os.system(f'/usr/bin/wget -P /tmp/ '
-                  f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py >/dev/null 2>&1')
-        os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
+        if '-v' not in argv:
+            os.system(f'/usr/bin/wget -P /tmp/ '
+                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
+            os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+        else:
+            os.system(f'/usr/bin/wget -P /tmp/ '
+                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py '
+                      f'>/dev/null 2>&1')
+            os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
         logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Uninstallation of {pkg} complete.')
-    sys.exit(f'The uninstallation of {pkg} has been a success.')
+    sys.exit(f'The uninstallation has been a success.')
