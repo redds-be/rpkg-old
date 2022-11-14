@@ -13,7 +13,7 @@ import sys
 def download(link, pkg):
     """ Download the package """
     logging.info(f'Downloading {pkg}...')
-    os.system(f'/usr/bin/wget -P /tmp/ {link}')
+    os.system(f'/usr/bin/wget -P /tmp/ s{link}')
 
 
 def extract(tarball, pkg):
@@ -45,7 +45,7 @@ def logger(argv, pkg):
                             format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename=f'/var/log/rpkg-{pkg}.log',
+        logging.basicConfig(filename=f'/var/log/rpkg/rpkg-{pkg}.log',
                             filemode='w',
                             encoding='utf-8',
                             level=logging.DEBUG,

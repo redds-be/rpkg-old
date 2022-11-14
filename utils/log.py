@@ -16,7 +16,7 @@ def logger(argv):
                             format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename='/var/log/rpkg.log',
+        logging.basicConfig(filename='/var/log/rpkg/rpkg.log',
                             filemode='w',
                             encoding='utf-8',
                             level=logging.DEBUG,
