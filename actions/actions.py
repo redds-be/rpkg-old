@@ -29,17 +29,32 @@ def install(argv):
     for pkg in to_install:
         logging.info(f'Starting the installation of {pkg}')
         if '-v' in argv:
-            os.system(f'/usr/bin/wget -P /tmp/ '
-                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+            try:
+                os.system(f'/usr/bin/wget -P /tmp/ '
+                          f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
+            except OSError:
+                logging.error(f'rbuild for {pkg} could not be downloaded')
+                sys.exit(f'The rbuild for {pkg} could not be downloaded')
+            try:
+                os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+            except OSError:
+                logging.error(f'rbuild for {pkg} could not be executed')
+                sys.exit(f'The rbuild for {pkg} could not be executed')
         else:
-            os.system(f'/usr/bin/wget -P /tmp/ '
-                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py '
-                      f'>/dev/null 2>&1')
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
+            try:
+                os.system(f'/usr/bin/wget -P /tmp/ '
+                          f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py >/dev/null 2>&1')
+            except OSError:
+                logging.error(f'rbuild for {pkg} could not be downloaded')
+                sys.exit(f'The rbuild for {pkg} could not be downloaded')
+            try:
+                os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
+            except OSError:
+                logging.error(f'rbuild for {pkg} could not be executed')
+                sys.exit(f'The rbuild for {pkg} could not be executed')
         logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Installation of {pkg} complete.')
-    sys.exit('The installation has been a success.')
+    sys.exit('The installation may or may not have been a success')
 
 
 def uninstall(argv):
@@ -48,14 +63,29 @@ def uninstall(argv):
     for pkg in to_uninstall:
         logging.info(f'Starting the uninstallation of {pkg}')
         if '-v' in argv:
-            os.system(f'/usr/bin/wget -P /tmp/ '
-                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+            try:
+                os.system(f'/usr/bin/wget -P /tmp/ '
+                          f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
+            except OSError:
+                logging.error(f'rdestroy for {pkg} could not be downloaded')
+                sys.exit(f'rdestroy for {pkg} could not be downloaded')
+            try:
+                os.system(f'/usr/bin/python3 /tmp/{pkg}.py')
+            except OSError:
+                logging.error(f'rdestroy for {pkg} could not be executed')
+                sys.exit(f'The rdestroy for {pkg} could not be executed')
         else:
-            os.system(f'/usr/bin/wget -P /tmp/ '
-                      f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py '
-                      f'>/dev/null 2>&1')
-            os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
+            try:
+                os.system(f'/usr/bin/wget -P /tmp/ '
+                          f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py >/dev/null 2>&1')
+            except OSError:
+                logging.error(f'rdestroy for {pkg} could not be downloaded')
+                sys.exit(f'The rdestroy for {pkg} could not be downloaded')
+            try:
+                os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
+            except OSError:
+                logging.error(f'rdestroy for {pkg} could not be executed')
+                sys.exit(f'The rdestroy for {pkg} could not be executed')
         logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Uninstallation of {pkg} complete.')
-    sys.exit('The uninstallation has been a success.')
+    sys.exit('The uninstallation may or may not have been a success.')

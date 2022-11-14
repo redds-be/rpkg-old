@@ -12,6 +12,7 @@ def logger(argv):
     """ RPKG log handler (logging has a way of doing it, but it's too much for my use) """
     if '-v' in argv:
         logging.basicConfig(encoding='utf-8',
+                            filemode='w',
                             level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
