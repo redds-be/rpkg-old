@@ -57,7 +57,7 @@ if __name__ == "__main__":
     VERSION = '7.1.0'
     PACKAGE = 'neofetch'
     EXTENSION = 'tar.gz'
-    DL_LINK = f'https://github.com/dylanaraps/d{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
+    DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
     EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
     logger(sys.argv, PACKAGE)
