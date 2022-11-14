@@ -8,7 +8,6 @@ Neofetch rbuild
 import os
 import logging
 import sys
-import subprocess
 
 
 def download(link, pkg):

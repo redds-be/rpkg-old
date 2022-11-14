@@ -8,6 +8,7 @@ Actions taken in function of the options
 import os
 import sys
 import logging
+import subprocess
 
 
 def take_action(argv):
@@ -25,31 +26,32 @@ def take_action(argv):
 
 def install(argv):
     """ Installation function """
+    wget_option = "--no-cache --no-cookies --no-check-certificate -P /tmp/ "
+    rbuild_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/"
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
         logging.info(f'Starting the installation of {pkg}')
         if '-v' in argv:
             try:
-                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
-                          f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
-            except OSError:
+                subprocess.run(f'/usr/bin/wget {wget_option} '
+                               f'{rbuild_link}{pkg}.py', shell=True, check=True)
+            except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                os.system(f'/usr/bin/python3 /tmp/{pkg}.py -v')
-            except OSError:
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v', shell=True, check=True)
+            except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed')
                 sys.exit(f'The rbuild for {pkg} could not be executed')
         else:
             try:
-                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
-                          f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py >/dev/null 2>&1')
-            except OSError:
+                subprocess.run(f'/usr/bin/wget {wget_option} {rbuild_link}{pkg}.py', check=True)
+            except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
-            except OSError:
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v', check=True)
+            except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed')
                 sys.exit(f'The rbuild for {pkg} could not be executed')
         logging.info("Ignore the 'getcwd' error.")
@@ -66,24 +68,24 @@ def uninstall(argv):
             try:
                 os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
                           f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
-            except OSError:
+            except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
                 sys.exit(f'rdestroy for {pkg} could not be downloaded')
             try:
                 os.system(f'/usr/bin/python3 /tmp/{pkg}.py -v')
-            except OSError:
+            except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be executed')
                 sys.exit(f'The rdestroy for {pkg} could not be executed')
         else:
             try:
                 os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
                           f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py >/dev/null 2>&1')
-            except OSError:
+            except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
                 sys.exit(f'The rdestroy for {pkg} could not be downloaded')
             try:
                 os.system(f'/usr/bin/python3 /tmp/{pkg}.py >/dev/null 2>&1')
-            except OSError:
+            except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be executed')
                 sys.exit(f'The rdestroy for {pkg} could not be executed')
         logging.info("Ignore the 'getcwd' error.")
