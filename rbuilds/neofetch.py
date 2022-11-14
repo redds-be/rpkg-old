@@ -40,7 +40,6 @@ def clean(pkg, tarball, dir_name):
 
 def logger(argv, pkg):
     """ rbuild log handler (logging has a way of doing it, but it's too much for my use) """
-    print(argv)
     if '-v' in argv:
         logging.basicConfig(encoding='utf-8',
                             level=logging.DEBUG,

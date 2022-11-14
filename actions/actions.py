@@ -36,7 +36,7 @@ def install(argv):
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                os.system(f'/usr/bin/python3 /tmp/{pkg}.py {argv}')
+                os.system(f'/usr/bin/python3 /tmp/{pkg}.py -v')
             except OSError:
                 logging.error(f'rbuild for {pkg} could not be executed')
                 sys.exit(f'The rbuild for {pkg} could not be executed')
@@ -70,7 +70,7 @@ def uninstall(argv):
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
                 sys.exit(f'rdestroy for {pkg} could not be downloaded')
             try:
-                os.system(f'/usr/bin/python3 /tmp/{pkg}.py {argv}')
+                os.system(f'/usr/bin/python3 /tmp/{pkg}.py -v')
             except OSError:
                 logging.error(f'rdestroy for {pkg} could not be executed')
                 sys.exit(f'The rdestroy for {pkg} could not be executed')
