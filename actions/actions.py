@@ -30,7 +30,7 @@ def install(argv):
         logging.info(f'Starting the installation of {pkg}')
         if '-v' in argv:
             try:
-                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificates -P /tmp/ '
+                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
                           f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py')
             except OSError:
                 logging.error(f'rbuild for {pkg} could not be downloaded')
@@ -42,7 +42,7 @@ def install(argv):
                 sys.exit(f'The rbuild for {pkg} could not be executed')
         else:
             try:
-                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificates -P /tmp/ '
+                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
                           f'https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/{pkg}.py >/dev/null 2>&1')
             except OSError:
                 logging.error(f'rbuild for {pkg} could not be downloaded')
@@ -64,7 +64,7 @@ def uninstall(argv):
         logging.info(f'Starting the uninstallation of {pkg}')
         if '-v' in argv:
             try:
-                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificates -P /tmp/ '
+                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
                           f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py')
             except OSError:
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
@@ -76,7 +76,7 @@ def uninstall(argv):
                 sys.exit(f'The rdestroy for {pkg} could not be executed')
         else:
             try:
-                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificates -P /tmp/ '
+                os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ '
                           f'https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/{pkg}.py >/dev/null 2>&1')
             except OSError:
                 logging.error(f'rdestroy for {pkg} could not be downloaded')

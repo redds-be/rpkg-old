@@ -13,7 +13,7 @@ import sys
 def download(link, pkg):
     """ Download the package """
     logging.info(f'Downloading {pkg}...')
-    os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificates -P /tmp/ {link}')
+    os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ {link}')
 
 
 def extract(tarball, pkg):
