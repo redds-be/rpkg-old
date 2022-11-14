@@ -48,7 +48,7 @@ def check_deps(argv):
                 sys.exit(f'{deps} does not seem to be installed, '
                          f'it must be installed for this operation')
         logging.info('All of the required dependencies are present.')
-    elif 'u' in argv:
+    elif '-u' in argv:
         for deps in deps_for_uninstall:
             if os.path.exists(deps):
                 logging.info(f'{deps} is present.')
