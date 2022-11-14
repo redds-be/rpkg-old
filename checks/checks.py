@@ -37,6 +37,8 @@ def check_deps(argv):
     logging.info('Checking if the dependencies are present.')
     deps_for_install = ['/usr/bin/bash', '/usr/bin/wget',
                         '/usr/bin/tar', '/usr/bin/python3', '/usr/bin/make']
+    deps_for_uninstall = ['/usr/bin/bash', '/usr/bin/wget',
+                          '/usr/bin/tar', '/usr/bin/python3', '/usr/bin/make']
     if '-i' in argv:
         for deps in deps_for_install:
             if os.path.exists(deps):
@@ -46,5 +48,12 @@ def check_deps(argv):
                 sys.exit(f'{deps} does not seem to be installed, '
                          f'it must be installed for this operation')
         logging.info('All of the required dependencies are present.')
-    else:
-        pass
+    elif 'u' in argv:
+        for deps in deps_for_uninstall:
+            if os.path.exists(deps):
+                logging.info(f'{deps} is present.')
+            else:
+                logging.error(f'{deps} is not installed!')
+                sys.exit(f'{deps} does not seem to be installed, '
+                         f'it must be installed for this operation')
+        logging.info('All of the required dependencies are present.')
