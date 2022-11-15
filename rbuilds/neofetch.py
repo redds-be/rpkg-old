@@ -7,19 +7,30 @@ Neofetch rbuild
 
 import os
 import logging
+import subprocess
 import sys
 
 
 def download(link, pkg):
     """ Download the package """
     logging.info(f'Downloading {pkg}...')
-    os.system(f'/usr/bin/wget --no-cache --no-cookies --no-check-certificate -P /tmp/ {link}')
+    wget_option = "--no-cache --no-cookies --no-check-certificate -P /tmp/ "
+    try:
+        subprocess.run(f'/usr/bin/wget {wget_option} {link}', shell=True, check=True)
+    except subprocess.CalledProcessError:
+        logging.error(f'Package {pkg} could not be downloaded')
+        sys.exit(f'The package {pkg} could not be downloaded')
+    logging.info(f'{pkg} downloaded...')
 
 
 def extract(tarball, pkg):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
-    os.system(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp')
+    try:
+        subprocess.run(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp', shell=True, check=True)
+    except subprocess.CalledProcessError:
+        logging.error(f'rbuild for {pkg} could not be downloaded')
+        sys.exit(f'The rbuild for {pkg} could not be downloaded')
 
 
 def install(dir_name, pkg):
