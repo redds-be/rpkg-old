@@ -8,6 +8,7 @@ Install action
 import sys
 import logging
 import subprocess
+from utils.lists import convert_to_list
 
 
 def install(argv):
@@ -16,6 +17,12 @@ def install(argv):
     rbuild_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/"
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
+        # installed = convert_to_list("/etc/rpkg/list/installed.list")
+        installable = convert_to_list("/etc/rpkg/list/installable.list")
+        if '-ver' in argv:
+            version = argv[argv.index('-ver') + 1]
+        else:
+            version = installable[installable.index(pkg) + 1]
         logging.info(f'Starting the installation of {pkg}')
         if '-v' in argv:
             try:
@@ -25,7 +32,7 @@ def install(argv):
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v', shell=True, check=True)
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -ver {version}', shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed')
                 sys.exit(f'The rbuild for {pkg} could not be executed')

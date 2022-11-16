@@ -74,20 +74,23 @@ def logger(argv, pkg):
 
 
 if __name__ == "__main__":
-    VERSION = '7.1.0'
+    VERSION = sys.argv[sys.argv.index('-ver') + 1]
     PACKAGE = 'neofetch'
     EXTENSION = 'tar.gz'
     DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
     EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
     INSTALLED_LIST = "/etc/rpkg/list/installed.list"
+    DELETE = "{N;d;}"
     logger(sys.argv, PACKAGE)
     download(DL_LINK, PACKAGE)
     extract(ARCHIVE_NAME, PACKAGE)
     install(EXTRACTED_NAME, PACKAGE)
     clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
     try:
-        subprocess.run(f'/usr/bin/echo "{PACKAGE} : {VERSION}" >> {INSTALLED_LIST}',
+        subprocess.run(f"/usr/bin/sed -i '/{PACKAGE}/{DELETE}' {INSTALLED_LIST}",
+                       shell=True, check=True)
+        subprocess.run(f'/usr/bin/echo -e "{PACKAGE}\n{VERSION}" >> {INSTALLED_LIST}',
                        shell=True, check=True)
         subprocess.run(f"/usr/bin/sed -i '/^$/d' {INSTALLED_LIST}",
                        shell=True, check=True)
