@@ -15,7 +15,12 @@ def install(argv):
     """ Installation function """
     wget_option = "--no-cache --no-cookies --no-check-certificate -P /tmp/ "
     rbuild_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/"
-    to_install = argv[argv.index('-i') + 1:]
+    if '-i' in argv:
+        to_install = argv[argv.index('-i') + 1:]
+    elif '--install' in argv:
+        to_install = argv[argv.index('--install') + 1:]
+    else:
+        to_install = []
     for pkg in to_install:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
         if pkg in installed:
@@ -30,11 +35,13 @@ def install(argv):
         installable = convert_to_list("/etc/rpkg/list/installable.list")
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
+        elif '--version' in argv:
+            version = argv[argv.index('--version') + 1]
         else:
             version = installable[installable.index(pkg) + 1]
-        keep = True if '-k' in argv else False
+        keep = True if '-k' or '--keep' in argv else False
         logging.info(f'Starting the installation of {pkg}')
-        if '-v' in argv:
+        if '-v' or '--verbose' in argv:
             try:
                 subprocess.run(f'/usr/bin/wget {wget_option} '
                                f'{rbuild_link}{pkg}.py', shell=True, check=True)

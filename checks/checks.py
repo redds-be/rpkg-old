@@ -35,12 +35,12 @@ def check_network():
 def check_deps(argv):
     """ Checks if the required dependencies are present """
     logging.info('Checking if the dependencies are present.')
-    deps_for_install = ['/usr/bin/bash', '/usr/bin/wget', '/usr/bin/echo',
+    deps_for_install = ['/usr/bin/bash', '/usr/bin/wget',
                         '/usr/bin/tar', '/usr/bin/python3', '/usr/bin/make',
                         '/usr/bin/sed']
     deps_for_uninstall = ['/usr/bin/bash', '/usr/bin/wget', '/usr/bin/sed',
                           '/usr/bin/tar', '/usr/bin/python3', '/usr/bin/make']
-    if '-i' in argv:
+    if '-i' or '--install' in argv:
         for deps in deps_for_install:
             if os.path.exists(deps):
                 logging.info(f'{deps} is present.')
@@ -49,7 +49,7 @@ def check_deps(argv):
                 sys.exit(f'{deps} does not seem to be installed, '
                          f'it must be installed for this operation')
         logging.info('All of the required dependencies are present.')
-    elif '-u' in argv:
+    elif '-u' or '--install' in argv:
         for deps in deps_for_uninstall:
             if os.path.exists(deps):
                 logging.info(f'{deps} is present.')

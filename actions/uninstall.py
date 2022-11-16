@@ -15,16 +15,23 @@ def uninstall(argv):
     """ Uninstallation function """
     wget_option = "--no-cache --no-cookies --no-check-certificate -P /tmp/ "
     rdestroy_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/"
-    to_uninstall = argv[argv.index('-u') + 1:]
+    if '-i' in argv:
+        to_uninstall = argv[argv.index('-u') + 1:]
+    elif '--install' in argv:
+        to_uninstall = argv[argv.index('--uninstall') + 1:]
+    else:
+        to_uninstall = []
     for pkg in to_uninstall:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
+        elif '--version' in argv:
+            version = argv[argv.index('--version') + 1]
         else:
             version = installed[installed.index(pkg) + 1]
-        keep = True if '-k' in argv else False
+        keep = True if '-k' or '--keep' in argv else False
         logging.info(f'Starting the uninstallation of {pkg}')
-        if '-v' in argv:
+        if '-v' or '--verbose' in argv:
             try:
                 subprocess.run(f'/usr/bin/wget {wget_option} '
                                f'{rdestroy_link}{pkg}.py', shell=True, check=True)
