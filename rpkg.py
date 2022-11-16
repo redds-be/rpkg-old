@@ -12,7 +12,7 @@ from actions.actions import take_action
 
 
 def main():
-    """ Colling some scripts """
+    """ Calling some scripts """
     logger(argv)
     check_root()
     check_network()
