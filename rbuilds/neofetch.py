@@ -27,7 +27,7 @@ def extract(tarball, pkg, keep):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
     try:
-        if keep:
+        if keep == 'True':
             if os.path.exists(f'/rpkg/{pkg}'):
                 subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
             subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}', shell=True, check=True)
@@ -46,7 +46,7 @@ def install(dir_name, pkg, keep):
     """ Installs the package """
     logging.info(f'Installing {pkg}...')
     try:
-        if keep:
+        if keep == 'True':
             subprocess.run('/usr/bin/make install',
                            cwd=f"/rpkg/{pkg}/{dir_name}", shell=True, check=True)
         else:
@@ -62,7 +62,7 @@ def clean(pkg, tarball, dir_name, keep):
     """ Clean the package installation process """
     logging.info(f'Cleaning temporary files for {pkg}...')
     try:
-        if keep:
+        if keep == 'True':
             subprocess.run(f'/usr/bin/rm /tmp/{pkg}.py', shell=True, check=True)
         else:
             subprocess.run(f'/usr/bin/rm /tmp/{tarball}', shell=True, check=True)
