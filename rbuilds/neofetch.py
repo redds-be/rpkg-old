@@ -86,6 +86,6 @@ if __name__ == "__main__":
     install(EXTRACTED_NAME, PACKAGE)
     clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
     try:
-        subprocess.run(f'/usr/bin/echo "{PACKAGE} : {VERSION}" >> /etc/rpkg/list/installed.list')
+        subprocess.run(f'/usr/bin/echo "d{PACKAGE} : {VERSION}" >> /etc/rpkg/list/installed.list')
     except subprocess.CalledProcessError:
         logging.error(f'{PACKAGE}: Could not be added on the installed list')
