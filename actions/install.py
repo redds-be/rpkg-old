@@ -23,6 +23,10 @@ def install(argv):
         to_install = []
     for pkg in to_install:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
+        installable = convert_to_list("/etc/rpkg/list/installable.list")
+        if pkg not in installable:
+            logging.error(f'{pkg}: Not in the repo.')
+            sys.exit(f'The package {pkg} is not in the repo.')
         if pkg in installed:
             while True:
                 reinstall = input(f'The package {pkg} seems to be '
