@@ -80,8 +80,16 @@ if __name__ == "__main__":
     DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
     EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
+    INSTALLED_LIST = "/etc/rpkg/list/installed.list"
     logger(sys.argv, PACKAGE)
     download(DL_LINK, PACKAGE)
     extract(ARCHIVE_NAME, PACKAGE)
     uninstall(EXTRACTED_NAME, PACKAGE)
     clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
+    try:
+        subprocess.run(f"/usr/bin/sed -i 's/{PACKAGE} : {VERSION}//g' {INSTALLED_LIST}",
+                       shell=True, check=True)
+        subprocess.run(f"/usr/bin/sed -i '/^$/d' {INSTALLED_LIST}",
+                       shell=True, check=True)
+    except subprocess.CalledProcessError:
+        logging.error(f'{PACKAGE}: Could not be added on the installed list')

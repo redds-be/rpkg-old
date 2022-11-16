@@ -89,5 +89,7 @@ if __name__ == "__main__":
     try:
         subprocess.run(f'/usr/bin/echo "{PACKAGE} : {VERSION}" >> {INSTALLED_LIST}',
                        shell=True, check=True)
+        subprocess.run(f"/usr/bin/sed -i '/^$/d' {INSTALLED_LIST}",
+                       shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{PACKAGE}: Could not be added on the installed list')
