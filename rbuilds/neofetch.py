@@ -31,7 +31,7 @@ def extract(tarball, pkg, keep):
             if os.path.exists(f'/rpkg/{pkg}'):
                 subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
             subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}', shell=True, check=True)
-            subprocess.run(f'/usr/bin/cp /tmp/{tarball} /rpkg/{pkg}', shell=True, check=True)
+            subprocess.run(f'/usr/bin/mv /tmp/{tarball} /rpkg/{pkg}', shell=True, check=True)
             subprocess.run(f'/usr/bin/tar -xvf /rpkg/{pkg}/{tarball} '
                            f'-C /rpkg/{pkg}', shell=True, check=True)
         else:
@@ -101,8 +101,6 @@ if __name__ == "__main__":
     install(EXTRACTED_NAME, PACKAGE, KEEP)
     if not KEEP:
         clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
-    else:
-        subprocess.run(f"/usr/bin/rm /tmp/{ARCHIVE_NAME}")
     try:
         subprocess.run(f"/usr/bin/sed -i '/{PACKAGE}/{DELETE}' {INSTALLED_LIST}",
                        shell=True, check=True)

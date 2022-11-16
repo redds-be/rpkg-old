@@ -33,8 +33,8 @@ def uninstall(argv):
             try:
                 subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -ver {version}', shell=True, check=True)
             except subprocess.CalledProcessError:
-                logging.error(f'rdestroy for {pkg} could not be executed')
-                sys.exit(f'The rdestroy for {pkg} could not be executed')
+                logging.error(f'rdestroy for {pkg} could not be executed properly')
+                sys.exit(f'The rdestroy for {pkg} could not be executed properly')
         else:
             try:
                 subprocess.run(f'/usr/bin/wget {wget_option} '
@@ -47,8 +47,8 @@ def uninstall(argv):
                 subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -ver {version}', capture_output=True,
                                shell=True, check=True)
             except subprocess.CalledProcessError:
-                logging.error(f'rdestroy for {pkg} could not be executed')
-                sys.exit(f'The rdestroy for {pkg} could not be executed')
+                logging.error(f'rdestroy for {pkg} could not be executed properly')
+                sys.exit(f'The rdestroy for {pkg} could not be executed properly')
         logging.info(f'Uninstallation of {pkg} complete.')
     print('-----------------------\nThe Uninstallation has been a success\n-----------------------')
     sys.exit()

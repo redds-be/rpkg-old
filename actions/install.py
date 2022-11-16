@@ -43,8 +43,8 @@ def install(argv):
             try:
                 subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -k {keep} -ver {version}', shell=True, check=True)
             except subprocess.CalledProcessError:
-                logging.error(f'rbuild for {pkg} could not be executed')
-                sys.exit(f'The rbuild for {pkg} could not be executed')
+                logging.error(f'rbuild for {pkg} could not be executed properly')
+                sys.exit(f'The rbuild for {pkg} could not be executed properly')
         else:
             try:
                 subprocess.run(f'/usr/bin/wget {wget_option} '
@@ -57,8 +57,8 @@ def install(argv):
                 subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -k {keep} -ver {version}', capture_output=True,
                                shell=True, check=True)
             except subprocess.CalledProcessError:
-                logging.error(f'rbuild for {pkg} could not be executed')
-                sys.exit(f'The rbuild for {pkg} could not be executed')
+                logging.error(f'rbuild for {pkg} could not be executed properly')
+                sys.exit(f'The rbuild for {pkg} could not be executed properly')
         logging.info(f'Installation of {pkg} complete.')
     print('-----------------------\nThe installation has been a success\n-----------------------')
     sys.exit()
