@@ -56,9 +56,12 @@ def clean(pkg, tarball, dir_name):
     try:
         if os.path.exists(f'/rpkg/{pkg}'):
             subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
-        subprocess.run(f'/usr/bin/rm /tmp/{tarball}', shell=True, check=True)
-        subprocess.run(f'/usr/bin/rm -rf /tmp/{dir_name}', shell=True, check=True)
-        subprocess.run(f'/usr/bin/rm /tmp/{pkg}.py', shell=True, check=True)
+        if os.path.exists(f'/tmp/{tarball}'):
+            subprocess.run(f'/usr/bin/rm /tmp/{tarball}', shell=True, check=True)
+        if os.path.exists(f'/tmp/{dir_name}'):
+            subprocess.run(f'/usr/bin/rm -rf /tmp/{dir_name}', shell=True, check=True)
+        if os.path.exists(f'/tmp/{pkg}.py'):
+            subprocess.run(f'/usr/bin/rm /tmp/{pkg}.py', shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Clean failed')
         sys.exit(f'The temporary files for the uninstallation of {pkg} could not be deleted')
@@ -99,10 +102,6 @@ if __name__ == "__main__":
     if KEEP == 'False':
         clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
     else:
-        subprocess.run(f'/usr/bin/rm /tmp/{PACKAGE}.py', shell=True, check=True)
-    if not os.path.exists(f'/rpkg/{PACKAGE}'):
-        subprocess.run(f'/usr/bin/rm /tmp/{ARCHIVE_NAME}', shell=True, check=True)
-        subprocess.run(f'/usr/bin/rm -rf /tmp/{EXTRACTED_NAME}', shell=True, check=True)
         subprocess.run(f'/usr/bin/rm /tmp/{PACKAGE}.py', shell=True, check=True)
     try:
         subprocess.run(f"/usr/bin/sed -i '/{PACKAGE}/{DELETE}' {INSTALLED_LIST}",
