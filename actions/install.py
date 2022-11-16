@@ -21,10 +21,11 @@ def install(argv):
         if pkg in installed:
             while True:
                 reinstall = input(f'The package {pkg} seems to be '
-                                  f'already installed. Do you want to re-install it ? [y/N] ') or 'n'
+                                  f'already installed. '
+                                  f'Do you want to re-install it ? [y/N] ') or 'n'
                 if reinstall.lower() == 'y':
                     break
-                elif reinstall.lower() == 'n':
+                if reinstall.lower() == 'n':
                     sys.exit(0)
         installable = convert_to_list("/etc/rpkg/list/installable.list")
         if '-ver' in argv:

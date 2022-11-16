@@ -9,7 +9,6 @@ import sys
 import logging
 from actions.install import install
 from actions.uninstall import uninstall
-from utils.lists import convert_to_list
 
 
 def take_action(argv):

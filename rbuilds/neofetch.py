@@ -47,9 +47,11 @@ def install(dir_name, pkg, keep):
     logging.info(f'Installing {pkg}...')
     try:
         if keep:
-            subprocess.run('/usr/bin/make install', cwd=f"/rpkg/{pkg}/{dir_name}", shell=True, check=True)
+            subprocess.run('/usr/bin/make install',
+                           cwd=f"/rpkg/{pkg}/{dir_name}", shell=True, check=True)
         else:
-            subprocess.run('/usr/bin/make install', cwd=f"/tmp/{dir_name}", shell=True, check=True)
+            subprocess.run('/usr/bin/make install',
+                           cwd=f"/tmp/{dir_name}", shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Installation failed')
         sys.exit(f'The package {pkg} could not be installed')
