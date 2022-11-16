@@ -15,12 +15,7 @@ def install(argv):
     """ Installation function """
     wget_option = "--no-cache --no-cookies --no-check-certificate -P /tmp/ "
     rbuild_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/"
-    if '-i' in argv:
-        to_install = argv[argv.index('-i') + 1:]
-    elif '--install' in argv:
-        to_install = argv[argv.index('--install') + 1:]
-    else:
-        to_install = []
+    to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
         installable = convert_to_list("/etc/rpkg/list/installable.list")
@@ -31,7 +26,7 @@ def install(argv):
             while True:
                 reinstall = input(f'The package {pkg} seems to be '
                                   f'already installed. '
-                                  f'Do you want to re-install it ? [y/N] ') or 'n'
+                                  f'Do you want to re-install it? [y/N] ') or 'n'
                 if reinstall.lower() == 'y':
                     break
                 if reinstall.lower() == 'n':
@@ -39,13 +34,18 @@ def install(argv):
         installable = convert_to_list("/etc/rpkg/list/installable.list")
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
-        elif '--version' in argv:
-            version = argv[argv.index('--version') + 1]
         else:
             version = installable[installable.index(pkg) + 1]
-        keep = True if '-k' or '--keep' in argv else False
+        keep = True if '-k' in argv else False
+        if '-a' in argv:
+            while True:
+                ask = input(f'Do you want to install {pkg} ({version})? [Y/n] ') or 'y'
+                if ask.lower() == 'y':
+                    break
+                if ask.lower() == 'n':
+                    sys.exit(0)
         logging.info(f'Starting the installation of {pkg}')
-        if '-v' or '--verbose' in argv:
+        if '-v' in argv:
             try:
                 subprocess.run(f'/usr/bin/wget {wget_option} '
                                f'{rbuild_link}{pkg}.py', shell=True, check=True)

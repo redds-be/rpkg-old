@@ -13,9 +13,9 @@ from actions.uninstall import uninstall
 
 def take_action(argv):
     """ Checks what to do with arguments """
-    if '-i' or '--install' in argv:
+    if '-i' in argv:
         install(argv)
-    if '-u' or '--uninstall' in argv:
+    if '-u' in argv:
         uninstall(argv)
     else:
         logging.error('Invalid arguments')
