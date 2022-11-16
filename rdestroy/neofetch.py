@@ -8,6 +8,7 @@ Neofetch rdestroy
 import logging
 import sys
 import subprocess
+import os
 
 
 def download(link, pkg):
@@ -33,11 +34,11 @@ def extract(tarball, pkg):
     logging.info(f'{pkg}: extracted.')
 
 
-def uninstall(dir_name, pkg):
+def uninstall(dir_name, pkg, keep):
     """ Uninstalls the package """
     logging.info(f'Uninstalling {pkg}...')
     try:
-        subprocess.run('make uninstall', cwd=f"/tmp/{dir_name}", shell=True, check=True)
+        subprocess.run('/usr/bin/make uninstall', cwd=f"/tmp/{dir_name}", shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Uninstallation failed')
         sys.exit(f'The package {pkg} could not be uninstalled')
@@ -47,13 +48,16 @@ def uninstall(dir_name, pkg):
 def clean(pkg, tarball, dir_name):
     """ Clean the package uninstallation process """
     logging.info(f'Cleaning temporary files for {pkg}...')
-    try:
-        subprocess.run(f'rm /tmp/{tarball}', shell=True, check=True)
-        subprocess.run(f'rm -rf /tmp/{dir_name}', shell=True, check=True)
-        subprocess.run(f'rm /tmp/{pkg}.py', shell=True, check=True)
-    except subprocess.CalledProcessError:
-        logging.error(f'{pkg}: Clean failed')
-        sys.exit(f'The temporary files for the uninstallation of {pkg} could not be deleted')
+    if os.path.exists(f'/rpkg/{pkg}'):
+        subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
+    else:
+        try:
+            subprocess.run(f'/usr/bin/rm /tmp/{tarball}', shell=True, check=True)
+            subprocess.run(f'/usr/bin/rm -rf /tmp/{dir_name}', shell=True, check=True)
+            subprocess.run(f'/usr/bin/rm /tmp/{pkg}.py', shell=True, check=True)
+        except subprocess.CalledProcessError:
+            logging.error(f'{pkg}: Clean failed')
+            sys.exit(f'The temporary files for the uninstallation of {pkg} could not be deleted')
     logging.info(f'{pkg}: cleaned')
 
 
@@ -77,16 +81,19 @@ if __name__ == "__main__":
     VERSION = sys.argv[sys.argv.index('-ver') + 1]
     PACKAGE = 'neofetch'
     EXTENSION = 'tar.gz'
+    KEEP = sys.argv[sys.argv.index('-k') + 1]
     DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
     EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
     INSTALLED_LIST = "/etc/rpkg/list/installed.list"
     DELETE = "{N;d;}"
     logger(sys.argv, PACKAGE)
-    download(DL_LINK, PACKAGE)
-    extract(ARCHIVE_NAME, PACKAGE)
-    uninstall(EXTRACTED_NAME, PACKAGE)
-    clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
+    if not os.path.exists(f'/rpkg/{PACKAGE}'):
+        download(DL_LINK, PACKAGE)
+        extract(ARCHIVE_NAME, PACKAGE)
+    uninstall(EXTRACTED_NAME, PACKAGE, KEEP)
+    if not KEEP:
+        clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
     try:
         subprocess.run(f"/usr/bin/sed -i '/{PACKAGE}/{DELETE}' {INSTALLED_LIST}",
                        shell=True, check=True)

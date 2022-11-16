@@ -41,7 +41,8 @@ def install(argv):
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -k {keep} -ver {version}', shell=True, check=True)
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -k {keep} '
+                               f'-ver {version}', shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed properly')
                 sys.exit(f'The rbuild for {pkg} could not be executed properly')
@@ -54,8 +55,8 @@ def install(argv):
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -k {keep} -ver {version}', capture_output=True,
-                               shell=True, check=True)
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -k {keep} '
+                               f'-ver {version}', capture_output=True, shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed properly')
                 sys.exit(f'The rbuild for {pkg} could not be executed properly')

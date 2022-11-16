@@ -22,6 +22,7 @@ def uninstall(argv):
             version = argv[argv.index('-ver') + 1]
         else:
             version = installed[installed.index(pkg) + 1]
+        keep = True if '-k' in argv else False
         logging.info(f'Starting the uninstallation of {pkg}')
         if '-v' in argv:
             try:
@@ -31,7 +32,8 @@ def uninstall(argv):
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
                 sys.exit(f'The rdestroy for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -ver {version}', shell=True, check=True)
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v'
+                               f' -k {keep} -ver {version}', shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be executed properly')
                 sys.exit(f'The rdestroy for {pkg} could not be executed properly')
@@ -44,8 +46,8 @@ def uninstall(argv):
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
                 sys.exit(f'The rdestroy for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -ver {version}', capture_output=True,
-                               shell=True, check=True)
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -k {keep} '
+                               f'-ver {version}', capture_output=True, shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be executed properly')
                 sys.exit(f'The rdestroy for {pkg} could not be executed properly')
