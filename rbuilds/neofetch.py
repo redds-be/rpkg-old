@@ -8,6 +8,7 @@ Neofetch rbuild
 import logging
 import subprocess
 import sys
+import os
 
 
 def download(link, pkg):
@@ -22,22 +23,33 @@ def download(link, pkg):
     logging.info(f'{pkg}: downloaded.')
 
 
-def extract(tarball, pkg):
+def extract(tarball, pkg, keep):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
     try:
-        subprocess.run(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp', shell=True, check=True)
+        if keep:
+            if os.path.exists(f'/rpkg/{pkg}'):
+                subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
+            subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}', shell=True, check=True)
+            subprocess.run(f'/usr/bin/cp /tmp/{tarball} /rpkg/{pkg}', shell=True, check=True)
+            subprocess.run(f'/usr/bin/tar -xvf /rpkg/{pkg}/{tarball} '
+                           f'-C /rpkg/{pkg}', shell=True, check=True)
+        else:
+            subprocess.run(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp', shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: extraction failed')
         sys.exit(f'The archive for the package {pkg} could not be extracted')
     logging.info(f'{pkg}: extracted.')
 
 
-def install(dir_name, pkg):
+def install(dir_name, pkg, keep):
     """ Installs the package """
     logging.info(f'Installing {pkg}...')
     try:
-        subprocess.run('/usr/bin/make install', cwd=f"/tmp/{dir_name}", shell=True, check=True)
+        if keep:
+            subprocess.run('/usr/bin/make install', cwd=f"/rpkg/{pkg}/{dir_name}", shell=True, check=True)
+        else:
+            subprocess.run('/usr/bin/make install', cwd=f"/tmp/{dir_name}", shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Installation failed')
         sys.exit(f'The package {pkg} could not be installed')
@@ -77,6 +89,7 @@ if __name__ == "__main__":
     VERSION = sys.argv[sys.argv.index('-ver') + 1]
     PACKAGE = 'neofetch'
     EXTENSION = 'tar.gz'
+    KEEP = sys.argv[sys.argv.index('-k') + 1]
     DL_LINK = f'https://github.com/dylanaraps/{PACKAGE}/archive/refs/tags/{VERSION}.{EXTENSION}'
     ARCHIVE_NAME = f'{VERSION}.{EXTENSION}'
     EXTRACTED_NAME = f'{PACKAGE}-{VERSION}'
@@ -84,9 +97,12 @@ if __name__ == "__main__":
     DELETE = "{N;d;}"
     logger(sys.argv, PACKAGE)
     download(DL_LINK, PACKAGE)
-    extract(ARCHIVE_NAME, PACKAGE)
-    install(EXTRACTED_NAME, PACKAGE)
-    clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
+    extract(ARCHIVE_NAME, PACKAGE, KEEP)
+    install(EXTRACTED_NAME, PACKAGE, KEEP)
+    if not KEEP:
+        clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
+    else:
+        subprocess.run(f"/usr/bin/rm /tmp/{ARCHIVE_NAME}")
     try:
         subprocess.run(f"/usr/bin/sed -i '/{PACKAGE}/{DELETE}' {INSTALLED_LIST}",
                        shell=True, check=True)

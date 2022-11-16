@@ -44,7 +44,7 @@ def uninstall(argv):
                 logging.error(f'rdestroy for {pkg} could not be downloaded')
                 sys.exit(f'The rdestroy for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py', capture_output=True,
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -ver {version}', capture_output=True,
                                shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be executed')

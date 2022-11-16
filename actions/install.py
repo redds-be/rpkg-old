@@ -31,6 +31,7 @@ def install(argv):
             version = argv[argv.index('-ver') + 1]
         else:
             version = installable[installable.index(pkg) + 1]
+        keep = True if '-k' in argv else False
         logging.info(f'Starting the installation of {pkg}')
         if '-v' in argv:
             try:
@@ -40,7 +41,7 @@ def install(argv):
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -ver {version}', shell=True, check=True)
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -v -k {keep} -ver {version}', shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed')
                 sys.exit(f'The rbuild for {pkg} could not be executed')
@@ -53,7 +54,7 @@ def install(argv):
                 logging.error(f'rbuild for {pkg} could not be downloaded')
                 sys.exit(f'The rbuild for {pkg} could not be downloaded')
             try:
-                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py', capture_output=True,
+                subprocess.run(f'/usr/bin/python3 /tmp/{pkg}.py -k {keep} -ver {version}', capture_output=True,
                                shell=True, check=True)
             except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed')
