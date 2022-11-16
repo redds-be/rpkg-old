@@ -43,7 +43,6 @@ def uninstall(argv):
             except subprocess.CalledProcessError:
                 logging.error(f'rdestroy for {pkg} could not be executed')
                 sys.exit(f'The rdestroy for {pkg} could not be executed')
-        logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Uninstallation of {pkg} complete.')
     print('-----------------------\nThe Uninstallation has been a success\n-----------------------')
     sys.exit()

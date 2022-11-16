@@ -43,7 +43,6 @@ def install(argv):
             except subprocess.CalledProcessError:
                 logging.error(f'rbuild for {pkg} could not be executed')
                 sys.exit(f'The rbuild for {pkg} could not be executed')
-        logging.info("Ignore the 'getcwd' error.")
         logging.info(f'Installation of {pkg} complete.')
     print('-----------------------\nThe installation has been a success\n-----------------------')
     sys.exit()
