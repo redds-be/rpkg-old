@@ -18,11 +18,21 @@ def uninstall(argv):
     to_uninstall = argv[argv.index('-u') + 1:]
     for pkg in to_uninstall:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
+        if pkg not in installed:
+            logging.error(f'{pkg}: Not installed, nothing to do.')
+            sys.exit(f'The package {pkg} is not installed!')
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
         else:
             version = installed[installed.index(pkg) + 1]
         keep = True if '-k' in argv else False
+        if '-a' in argv:
+            while True:
+                ask = input(f'Do you want to uninstall {pkg} ({version})? [y/N] ') or 'n'
+                if ask.lower() == 'y':
+                    break
+                if ask.lower() == 'n':
+                    sys.exit(0)
         logging.info(f'Starting the uninstallation of {pkg}')
         if '-v' in argv:
             try:
