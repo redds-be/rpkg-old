@@ -20,7 +20,7 @@ def download(link, pkg):
     except subprocess.CalledProcessError:
         logging.error(f'Package {pkg} could not be downloaded')
         sys.exit(f'The package {pkg} could not be downloaded')
-    logging.info(f'{pkg} downloaded...')
+    logging.info(f'{pkg} downloaded.')
 
 
 def extract(tarball, pkg):
@@ -29,15 +29,20 @@ def extract(tarball, pkg):
     try:
         subprocess.run(f'/usr/bin/tar -xvf /tmp/{tarball} -C /tmp', shell=True, check=True)
     except subprocess.CalledProcessError:
-        logging.error(f'rbuild for {pkg} could not be downloaded')
-        sys.exit(f'The rbuild for {pkg} could not be downloaded')
+        logging.error(f'Package {pkg} could not be extracted')
+        sys.exit(f'The Package {pkg} could not be extracted')
+    logging.info(f'{pkg} extracted.')
 
 
 def install(dir_name, pkg):
     """ Installs the package """
     logging.info(f'Installing {pkg}...')
-    os.chdir(f'/tmp/{dir_name}')
-    os.system('make install')
+    try:
+        os.chdir(f'/tmp/{dir_name}')
+        subprocess.run('make install', shell=True, check=True)
+    except:
+        sys.exit()
+
 
 
 def clean(pkg, tarball, dir_name):
