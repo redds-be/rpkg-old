@@ -17,12 +17,11 @@ def uninstall(argv):
     rdestroy_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rdestroy/"
     to_uninstall = argv[argv.index('-u') + 1:]
     for pkg in to_uninstall:
-        # installed = convert_to_list("/etc/rpkg/list/installed.list")
-        uninstallable = convert_to_list("/etc/rpkg/list/installable.list")
+        installed = convert_to_list("/etc/rpkg/list/installed.list")
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
         else:
-            version = uninstallable[uninstallable.index(pkg) + 1]
+            version = installed[installed.index(pkg) + 1]
         logging.info(f'Starting the uninstallation of {pkg}')
         if '-v' in argv:
             try:

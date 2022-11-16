@@ -17,7 +17,15 @@ def install(argv):
     rbuild_link = "https://raw.githubusercontent.com/redds-be/rpkg/main/rbuilds/"
     to_install = argv[argv.index('-i') + 1:]
     for pkg in to_install:
-        # installed = convert_to_list("/etc/rpkg/list/installed.list")
+        installed = convert_to_list("/etc/rpkg/list/installed.list")
+        if pkg in installed:
+            while True:
+                reinstall = input(f'The package {pkg} seems to be '
+                                  f'already installed. Do you want to re-install it ? [y/N] ') or 'n'
+                if reinstall.lower() == 'y':
+                    break
+                elif reinstall.lower() == 'n':
+                    sys.exit(0)
         installable = convert_to_list("/etc/rpkg/list/installable.list")
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
