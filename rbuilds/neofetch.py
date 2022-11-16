@@ -37,7 +37,7 @@ def install(dir_name, pkg):
     """ Installs the package """
     logging.info(f'Installing {pkg}...')
     try:
-        subprocess.run('make install', cwd=f"/tmp/{dir_name}", shell=True, check=True)
+        subprocess.run('/usr/bin/make install', cwd=f"/tmp/{dir_name}", shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Installation failed')
         sys.exit(f'The package {pkg} could not be installed')
@@ -48,9 +48,9 @@ def clean(pkg, tarball, dir_name):
     """ Clean the package installation process """
     logging.info(f'Cleaning temporary files for {pkg}...')
     try:
-        subprocess.run(f'rm /tmp/{tarball}', shell=True, check=True)
-        subprocess.run(f'rm -rf /tmp/{dir_name}', shell=True, check=True)
-        subprocess.run(f'rm /tmp/{pkg}.py', shell=True, check=True)
+        subprocess.run(f'/usr/bin/rm /tmp/{tarball}', shell=True, check=True)
+        subprocess.run(f'/usr/bin/rm -rf /tmp/{dir_name}', shell=True, check=True)
+        subprocess.run(f'/usr/bin/rm /tmp/{pkg}.py', shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Clean failed')
         sys.exit(f'The temporary files for the installation of {pkg} could not be deleted')
@@ -86,6 +86,6 @@ if __name__ == "__main__":
     install(EXTRACTED_NAME, PACKAGE)
     clean(PACKAGE, ARCHIVE_NAME, EXTRACTED_NAME)
     try:
-        subprocess.run(f'echo {PACKAGE} : {VERSION} >> /etc/rpkg/list/installed.list')
+        subprocess.run(f'/usr/bin/echo "{PACKAGE} : {VERSION}" >> /etc/rpkg/list/installed.list')
     except subprocess.CalledProcessError:
         logging.error(f'{PACKAGE}: Could not be added on the installed list')
