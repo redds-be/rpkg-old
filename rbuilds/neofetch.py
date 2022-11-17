@@ -6,6 +6,7 @@ Neofetch rbuild
 """
 
 import logging
+import configparser
 import subprocess
 import sys
 import os
@@ -91,6 +92,8 @@ def logger(argv, pkg):
 
 
 if __name__ == "__main__":
+    CONFIG = configparser.ConfigParser()
+    CONFIG.read('/etc/rpkg/pkgconf/default/neofetch.ini')
     VERSION = sys.argv[sys.argv.index('-ver') + 1]
     PACKAGE = 'neofetch'
     EXTENSION = 'tar.gz'

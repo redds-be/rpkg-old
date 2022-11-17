@@ -8,6 +8,8 @@ Install action
 import sys
 import logging
 import subprocess
+import configparser
+import os
 from utils.lists import convert_to_list
 
 
@@ -34,6 +36,14 @@ def install(argv):
         installable = convert_to_list("/etc/rpkg/list/installable.list")
         if '-ver' in argv:
             version = argv[argv.index('-ver') + 1]
+        elif os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
+            config = configparser.ConfigParser()
+            config.read(f'/etc/rpkg/pkgconf/custom/{pkg}.ini')
+            version = config['DEFAULT']['Version']
+        elif os.path.exists(f'/etc/rpkg/pkgconf/default/{pkg}.ini'):
+            config = configparser.ConfigParser()
+            config.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
+            version = config['DEFAULT']['Version']
         else:
             version = installable[installable.index(pkg) + 1]
         keep = True if '-k' in argv else False
