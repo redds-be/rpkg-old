@@ -28,7 +28,7 @@ def main(pkg, keep, argv):
         build_dir = False
     uninstall_command = pkgconf['UNINSTALL']['UninstallCommand']
     uninstall(pkg, dir_name, uninstall_command, build_dir, argv)
-    clean(pkg, keep)
+    clean(pkg, keep, argv)
     index(pkg)
 
 
@@ -62,14 +62,18 @@ def uninstall(pkg, dir_name, uninstall_command, build_dir, argv):
         logging.info(f"{pkg} can't be uninstalled using make, please do it manually")
 
 
-def clean(pkg, keep):
+def clean(pkg, keep, argv):
     """ Clean the package files """
     logging.info(f'Cleaning installation files for {pkg}...')
     try:
         if keep:
             pass
         else:
-            subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
+            if '-v' in argv:
+                subprocess.run(f'/usr/bin/rm -rvf /rpkg/{pkg}', shell=True, check=True)
+            else:
+                subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}',
+                               shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Clean failed')
         sys.exit(f'\033[1;31mThe installation files for {pkg} could not be deleted')

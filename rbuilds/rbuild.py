@@ -78,13 +78,22 @@ def extract(pkg, extractor, dest_option, archive, argv, version, pkglist):
     print(f'\033[1;37m>>> Extracting (\033[1;33m{pkglist.index(pkg) +1}'
           f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
     try:
-        if os.path.exists(f'/rpkg/{pkg}'):
-            subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}',
+        if '-v' in argv:
+            if os.path.exists(f'/rpkg/{pkg}'):
+                subprocess.run(f'/usr/bin/rm -rvf /rpkg/{pkg}',
+                               shell=True, check=True)
+            subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}',
                            shell=True, check=True)
-        subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}',
-                       shell=True, check=True)
-        subprocess.run(f'/usr/bin/mv /tmp/{archive} /rpkg/{pkg}',
-                       shell=True, check=True)
+            subprocess.run(f'/usr/bin/mv -v /tmp/{archive} /rpkg/{pkg}',
+                           shell=True, check=True)
+        else:
+            if os.path.exists(f'/rpkg/{pkg}'):
+                subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}',
+                               shell=True, check=True)
+            subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}',
+                           shell=True, check=True)
+            subprocess.run(f'/usr/bin/mv /tmp/{archive} /rpkg/{pkg}',
+                           shell=True, check=True)
         if '-v' in argv:
             subprocess.run(f'{extractor} /rpkg/{pkg}/{archive} '
                            f'{dest_option} /rpkg/{pkg}',
@@ -108,6 +117,8 @@ def compiling(pkg, dir_name, build_dir, preconfig,
     try:
         if '-v' in argv:
             if build_dir:
+                subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
+                               shell=True, check=True)
                 if preconfig:
                     subprocess.run(f'{preconfig}',
                                    cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
@@ -153,6 +164,8 @@ def compiling(pkg, dir_name, build_dir, preconfig,
                                    shell=True, check=True)
         else:
             if build_dir:
+                subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}/{dir_name}/{build_dir}',
+                               shell=True, check=True, capture_output=True)
                 if preconfig:
                     subprocess.run(f'{preconfig}',
                                    cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
