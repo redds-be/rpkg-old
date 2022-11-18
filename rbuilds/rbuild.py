@@ -236,6 +236,12 @@ def install(pkg, dir_name, install_command, check,
                     subprocess.run(f'{post_install}',
                                    cwd=f"/rpkg/{pkg}/{dir_name}",
                                    shell=True, check=True)
+                if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
+                    print(f'\033[1;37m>>> Running post-install scripts '
+                          f'(\033[1;33m{pkglist.index(pkg) + 1}'
+                          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+                    subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
+                                   shell=True, check=True, capture_output=True)
         else:
             if build_dir:
                 if '-t' in argv:
@@ -262,6 +268,12 @@ def install(pkg, dir_name, install_command, check,
                 if post_install:
                     subprocess.run(f'{post_install}',
                                    cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True, capture_output=True)
+                if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
+                    print(f'\033[1;37m>>> Running post-install scripts '
+                          f'(\033[1;33m{pkglist.index(pkg) + 1}'
+                          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+                    subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
                                    shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Installation failed')
