@@ -12,7 +12,7 @@ import subprocess
 import configparser
 
 
-def main(pkg, argv):
+def main(pkg, argv, pkglist):
     """ Handles the build instructions """
     pkgconf = configparser.ConfigParser()
     if os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
@@ -20,15 +20,17 @@ def main(pkg, argv):
     else:
         pkgconf.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
 
+    version = pkgconf['BASEINFO']['Version']
+
     downloader = pkgconf['DOWNLOAD']['Downloader']
     dl_link = pkgconf['DOWNLOAD']['Link']
-    download(pkg, downloader, dl_link, argv)
+    download(pkg, downloader, dl_link, argv, version, pkglist)
 
     extractor = pkgconf['EXTRACTION']['Extractor']
     dest_option = pkgconf['EXTRACTION']['DestinationOption']
     archive = pkgconf['EXTRACTION']['ArchiveName']
     dir_name = pkgconf['EXTRACTION']['ExtractedArchiveName']
-    extract(pkg, extractor, dest_option, archive, argv)
+    extract(pkg, extractor, dest_option, archive, argv, version, pkglist)
 
     compile_or_not_compile = pkgconf['BASEINFO']['Compile']
     if compile_or_not_compile == 'True':
@@ -38,22 +40,25 @@ def main(pkg, argv):
         compile_command = pkgconf['COMPILE']['CompileCommand']
         check = pkgconf['INSTALL']['Check']
         post_install = pkgconf['INSTALL']['PostInstall']
-        compiling(pkg, dir_name, build_dir, preconfig, configure, compile_command, argv)
+        compiling(pkg, dir_name, build_dir, preconfig, configure,
+                  compile_command, argv, version, pkglist)
     else:
         build_dir = False
         check = False
         post_install = False
 
     install_command = pkgconf['INSTALL']['InstallCommand']
-    install(pkg, dir_name, install_command, check, post_install, argv, build_dir)
+    install(pkg, dir_name, install_command, check, post_install,
+            argv, build_dir, version, pkglist)
 
-    version = pkgconf['BASEINFO']['Version']
     index(pkg, version)
 
 
-def download(pkg, downloader, dl_link, argv):
+def download(pkg, downloader, dl_link, argv, version, pkglist):
     """ Download the package """
     logging.info(f'Downloading {pkg}...')
+    print(f'\033[1;37m>>> Downloading (\033[1;33m{pkglist.index(pkg) +1}'
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
     try:
         if '-v' in argv:
             subprocess.run(f'{downloader} {dl_link}',
@@ -63,13 +68,15 @@ def download(pkg, downloader, dl_link, argv):
                            shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Download failed')
-        sys.exit(f'The archive for the package {pkg} could not be downloaded')
+        sys.exit(f'\033[1;31mThe archive for the package {pkg} could not be downloaded')
     logging.info(f'{pkg}: downloaded.')
 
 
-def extract(pkg, extractor, dest_option, archive, argv):
+def extract(pkg, extractor, dest_option, archive, argv, version, pkglist):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
+    print(f'\033[1;37m>>> Extracting (\033[1;33m{pkglist.index(pkg) +1}'
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
     try:
         if os.path.exists(f'/rpkg/{pkg}'):
             subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}',
@@ -88,13 +95,16 @@ def extract(pkg, extractor, dest_option, archive, argv):
                            shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: extraction failed')
-        sys.exit(f'The archive for the package {pkg} could not be extracted')
+        sys.exit(f'\033[1;31mThe archive for the package {pkg} could not be extracted')
     logging.info(f'{pkg}: extracted.')
 
 
-def compiling(pkg, dir_name, build_dir, preconfig, configure, compile_command, argv):
+def compiling(pkg, dir_name, build_dir, preconfig,
+              configure, compile_command, argv, version, pkglist):
     """ Compiles the package """
     logging.info(f'Compiling {pkg}...')
+    print(f'\033[1;37m>>> Compiling (\033[1;33m{pkglist.index(pkg) +1}'
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
     try:
         if '-v' in argv:
             if build_dir:
@@ -188,13 +198,16 @@ def compiling(pkg, dir_name, build_dir, preconfig, configure, compile_command, a
                                    shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: compiling failed')
-        sys.exit(f'The package {pkg} could not be compiled')
+        sys.exit(f'\033[1;31mThe package {pkg} could not be compiled')
     logging.info(f'{pkg}: compiled.')
 
 
-def install(pkg, dir_name, install_command, check, post_install, argv, build_dir):
+def install(pkg, dir_name, install_command, check,
+            post_install, argv, build_dir, version, pkglist):
     """ Installs the package """
     logging.info(f'Installing {pkg}...')
+    print(f'\033[1;37m>>> Installing (\033[1;33m{pkglist.index(pkg) +1}'
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
     try:
         if '-v' in argv:
             if build_dir:
@@ -252,7 +265,7 @@ def install(pkg, dir_name, install_command, check, post_install, argv, build_dir
                                    shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Installation failed')
-        sys.exit(f'The package {pkg} could not be installed')
+        sys.exit(f'\033[1;31mThe package {pkg} could not be installed')
     logging.info(f'{pkg}: installed')
 
 

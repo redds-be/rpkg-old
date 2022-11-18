@@ -16,12 +16,13 @@ def uninstall(argv):
     to_uninstall = argv[argv.index('-u') + 1:]
     for pkg in to_uninstall:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
+        version = installed[installed.index(pkg) + 1]
         if pkg not in installed:
             logging.error(f'{pkg}: Not installed, nothing to do.')
-            sys.exit(f'The package {pkg} is not installed!')
+            sys.exit(f'\033[1;37mThe package {pkg} is not installed!')
         if '-a' in argv:
             while True:
-                ask = input(f'Do you want to uninstall {pkg}? [y/N] ') or 'n'
+                ask = input(f'\033[1;37mDo you want to uninstall {pkg} ({version})? [y/N] ') or 'n'
                 if ask.lower() == 'y':
                     break
                 if ask.lower() == 'n':
@@ -32,7 +33,7 @@ def uninstall(argv):
             rdestroy(pkg, keep, argv)
         except ModuleNotFoundError:
             logging.error(f'rdestroy for {pkg} could not be executed properly')
-            sys.exit(f'The rdestroy for {pkg} could not be executed properly')
+            sys.exit(f'\033[1;31mThe rdestroy for {pkg} could not be executed properly')
         logging.info(f'Uninstallation of {pkg} complete.')
-    print('-----------------------\nThe Uninstallation has been a success\n-----------------------')
+    print('\n\033[1;37mThe Uninstallation has been a success')
     sys.exit(0)
