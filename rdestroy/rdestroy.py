@@ -12,7 +12,7 @@ import subprocess
 import configparser
 
 
-def main(pkg, keep):
+def main(pkg, keep, argv):
     """ Handles the 'destroy' instructions """
     pkgconf = configparser.ConfigParser()
     if os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
@@ -21,22 +21,45 @@ def main(pkg, keep):
         pkgconf.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
 
     dir_name = pkgconf['EXTRACTION']['ExtractedArchiveName']
+    compile_or_not_compile = pkgconf['BASEINFO']['Compile']
+    if compile_or_not_compile == 'True':
+        build_dir = pkgconf['COMPILE']['BuildDir']
+    else:
+        build_dir = False
     uninstall_command = pkgconf['UNINSTALL']['UninstallCommand']
-    uninstall(pkg, dir_name, uninstall_command)
+    uninstall(pkg, dir_name, uninstall_command, build_dir, argv)
     clean(pkg, keep)
     index(pkg)
 
 
-def uninstall(pkg, dir_name, uninstall_command):
+def uninstall(pkg, dir_name, uninstall_command, build_dir, argv):
     """ Uninstalls the package """
-    logging.info(f'Installing {pkg}...')
-    try:
-        subprocess.run(f'{uninstall_command}',
-                       cwd=f"/rpkg/{pkg}/{dir_name}", shell=True, check=True)
-    except subprocess.CalledProcessError:
-        logging.error(f'{pkg}: Uninstallation failed')
-        sys.exit(f'The package {pkg} could not be uninstalled')
-    logging.info(f'{pkg}: uninstalled')
+    logging.info(f'Uninstalling {pkg}...')
+    if uninstall_command:
+        try:
+            if '-v' in argv:
+                if build_dir:
+                    subprocess.run(f'{uninstall_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True)
+                else:
+                    subprocess.run(f'{uninstall_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True)
+            else:
+                if build_dir:
+                    subprocess.run(f'{uninstall_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True, capture_output=True)
+                else:
+                    subprocess.run(f'{uninstall_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True, capture_output=True)
+        except subprocess.CalledProcessError:
+            logging.error(f'{pkg}: Uninstallation failed')
+            sys.exit(f'The package {pkg} could not be uninstalled')
+    else:
+        logging.info(f"{pkg} can't be uninstalled using make, please do it manually")
 
 
 def clean(pkg, keep):
