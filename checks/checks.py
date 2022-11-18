@@ -16,7 +16,7 @@ def check_root():
     logging.info('Checking if the program is running as root...')
     if os.geteuid() != 0:
         logging.error('RPKG not running as root.')
-        sys.exit('You need to run RPKG as root.')
+        sys.exit('\033[1;33mYou need to run RPKG as root.')
     else:
         logging.info('Running as root...')
 
@@ -29,7 +29,7 @@ def check_network():
         logging.info('Internet connectivity : OK')
     except socket.gaierror:
         logging.error('No internet connection!')
-        sys.exit('You need to be connected to the internet to run this program.')
+        sys.exit('\033[1;33mYou need to be connected to the internet to run this program.')
 
 
 def check_deps(argv):
@@ -46,7 +46,7 @@ def check_deps(argv):
                 logging.info(f'{deps} is present.')
             else:
                 logging.error(f'{deps} is not installed!')
-                sys.exit(f'{deps} does not seem to be installed, '
+                sys.exit(f'\033[1;33m{deps} does not seem to be installed, '
                          f'it must be installed for this operation')
         logging.info('All of the required dependencies are present.')
     elif '-u' in argv:
@@ -55,6 +55,6 @@ def check_deps(argv):
                 logging.info(f'{deps} is present.')
             else:
                 logging.error(f'{deps} is not installed!')
-                sys.exit(f'{deps} does not seem to be installed, '
+                sys.exit(f'\033[1;33m{deps} does not seem to be installed, '
                          f'it must be installed for this operation')
         logging.info('All of the required dependencies are present.')

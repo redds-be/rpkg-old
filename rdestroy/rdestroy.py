@@ -57,7 +57,7 @@ def uninstall(pkg, dir_name, uninstall_command, build_dir, argv):
                                    shell=True, check=True, capture_output=True)
         except subprocess.CalledProcessError:
             logging.error(f'{pkg}: Uninstallation failed')
-            sys.exit(f'The package {pkg} could not be uninstalled')
+            sys.exit(f'\033[1;31mThe package {pkg} could not be uninstalled')
     else:
         logging.info(f"{pkg} can't be uninstalled using make, please do it manually")
 
@@ -72,7 +72,7 @@ def clean(pkg, keep):
             subprocess.run(f'/usr/bin/rm -rf /rpkg/{pkg}', shell=True, check=True)
     except subprocess.CalledProcessError:
         logging.error(f'{pkg}: Clean failed')
-        sys.exit(f'The installation files for {pkg} could not be deleted')
+        sys.exit(f'\033[1;31mThe installation files for {pkg} could not be deleted')
     logging.info(f'{pkg}: cleaned')
 
 

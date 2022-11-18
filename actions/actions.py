@@ -19,4 +19,4 @@ def take_action(argv):
         uninstall(argv)
     else:
         logging.error('Invalid arguments')
-        sys.exit("Argument not recognized use -h to print an help message.")
+        sys.exit("\033[1;33mArgument not recognized use -h to print an help message.")

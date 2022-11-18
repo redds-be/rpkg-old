@@ -18,4 +18,4 @@ def convert_to_list(path):
             return to_list
     except OSError:
         logging.error(f'Could not convert: {path} into a list')
-        sys.exit('Something went wrong, please check if rpkg is correctly installed.')
+        sys.exit('\033[1;31mSomething went wrong, please check if rpkg is correctly installed')
