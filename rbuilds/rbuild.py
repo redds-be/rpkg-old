@@ -35,14 +35,15 @@ def main(pkg, argv, pkglist):
     compile_or_not_compile = pkgconf['BASEINFO']['Compile']
     if compile_or_not_compile == 'True':
         build_dir = pkgconf['COMPILE']['BuildDir']
-        preconfig = pkgconf['COMPILE']['PreConfigure']
+        preconfig = pkgconf['COMPILE']['PreConfigure1']
+        pre_nbr = int(pkgconf['BASEINFO']['MultiplePre'])
         configure = pkgconf['COMPILE']['CONFIGURE']
         compile_command = pkgconf['COMPILE']['CompileCommand']
         check = pkgconf['INSTALL']['Check']
         post_install = pkgconf['INSTALL']['PostInstall1']
         post_nbr = int(pkgconf['BASEINFO']['MultiplePost'])
         compiling(pkg, dir_name, build_dir, preconfig, configure,
-                  compile_command, argv, version, pkglist)
+                  compile_command, argv, version, pkglist, pre_nbr, pkgconf)
     else:
         build_dir = False
         check = False
@@ -111,7 +112,7 @@ def extract(pkg, extractor, dest_option, archive, argv, version, pkglist):
 
 
 def compiling(pkg, dir_name, build_dir, preconfig,
-              configure, compile_command, argv, version, pkglist):
+              configure, compile_command, argv, version, pkglist, pre_nbr, pkgconf):
     """ Compiles the package """
     logging.info(f'Compiling {pkg}...')
     print(f'\033[1;37m>>> Compiling (\033[1;33m{pkglist.index(pkg) +1}'
@@ -122,9 +123,11 @@ def compiling(pkg, dir_name, build_dir, preconfig,
                 subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
                                shell=True, check=True)
                 if preconfig:
-                    subprocess.run(f'{preconfig}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True)
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True)
                     if configure:
                         subprocess.run(f'{configure}',
                                        cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
@@ -144,9 +147,11 @@ def compiling(pkg, dir_name, build_dir, preconfig,
                                    shell=True, check=True)
             else:
                 if preconfig:
-                    subprocess.run(f'{preconfig}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True)
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True)
                     if configure:
                         subprocess.run(f'{configure}',
                                        cwd=f"/rpkg/{pkg}/{dir_name}",
@@ -169,9 +174,11 @@ def compiling(pkg, dir_name, build_dir, preconfig,
                 subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}/{dir_name}/{build_dir}',
                                shell=True, check=True, capture_output=True)
                 if preconfig:
-                    subprocess.run(f'{preconfig}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True, capture_output=True)
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True, capture_output=True)
                     if configure:
                         subprocess.run(f'{configure}',
                                        cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
@@ -191,9 +198,11 @@ def compiling(pkg, dir_name, build_dir, preconfig,
                                    shell=True, check=True, capture_output=True)
             else:
                 if preconfig:
-                    subprocess.run(f'{preconfig}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True, capture_output=True)
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True, capture_output=True)
                     if configure:
                         subprocess.run(f'{configure}',
                                        cwd=f"/rpkg/{pkg}/{dir_name}",
