@@ -30,7 +30,7 @@ def uninstall(argv):
         keep = True if '-k' in argv else False
         logging.info(f'Starting the uninstallation of {pkg}')
         try:
-            rdestroy(pkg, keep, argv)
+            rdestroy(pkg, keep, argv, to_uninstall, version)
         except ModuleNotFoundError:
             logging.error(f'rdestroy for {pkg} could not be executed properly')
             sys.exit(f'\033[1;31mThe rdestroy for {pkg} could not be executed properly')

@@ -12,7 +12,7 @@ import subprocess
 import configparser
 
 
-def main(pkg, keep, argv):
+def main(pkg, keep, argv, pkglist, version):
     """ Handles the 'destroy' instructions """
     pkgconf = configparser.ConfigParser()
     if os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
@@ -27,14 +27,16 @@ def main(pkg, keep, argv):
     else:
         build_dir = False
     uninstall_command = pkgconf['UNINSTALL']['UninstallCommand']
-    uninstall(pkg, dir_name, uninstall_command, build_dir, argv)
-    clean(pkg, keep, argv)
+    uninstall(pkg, dir_name, uninstall_command, build_dir, argv, pkglist, version)
+    clean(pkg, keep, argv, pkglist, version)
     index(pkg)
 
 
-def uninstall(pkg, dir_name, uninstall_command, build_dir, argv):
+def uninstall(pkg, dir_name, uninstall_command, build_dir, argv, pkglist, version):
     """ Uninstalls the package """
     logging.info(f'Uninstalling {pkg}...')
+    print(f'\033[1;37m>>> Uninstalling (\033[1;33m{pkglist.index(pkg) +1}'
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     if uninstall_command:
         try:
             if '-v' in argv:
@@ -62,9 +64,11 @@ def uninstall(pkg, dir_name, uninstall_command, build_dir, argv):
         logging.info(f"{pkg} can't be uninstalled using make, please do it manually")
 
 
-def clean(pkg, keep, argv):
+def clean(pkg, keep, argv, pkglist, version):
     """ Clean the package files """
     logging.info(f'Cleaning installation files for {pkg}...')
+    print(f'\033[1;37m>>> Cleaning (\033[1;33m{pkglist.index(pkg) +1}'
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     try:
         if keep:
             pass

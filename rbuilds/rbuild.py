@@ -39,17 +39,19 @@ def main(pkg, argv, pkglist):
         configure = pkgconf['COMPILE']['CONFIGURE']
         compile_command = pkgconf['COMPILE']['CompileCommand']
         check = pkgconf['INSTALL']['Check']
-        post_install = pkgconf['INSTALL']['PostInstall']
+        post_install = pkgconf['INSTALL']['PostInstall1']
+        post_nbr = int(pkgconf['BASEINFO']['MultiplePost'])
         compiling(pkg, dir_name, build_dir, preconfig, configure,
                   compile_command, argv, version, pkglist)
     else:
         build_dir = False
         check = False
         post_install = False
+        post_nbr = 0
 
     install_command = pkgconf['INSTALL']['InstallCommand']
     install(pkg, dir_name, install_command, check, post_install,
-            argv, build_dir, version, pkglist)
+            argv, build_dir, version, pkglist, post_nbr, pkgconf)
 
     index(pkg, version)
 
@@ -58,7 +60,7 @@ def download(pkg, downloader, dl_link, argv, version, pkglist):
     """ Download the package """
     logging.info(f'Downloading {pkg}...')
     print(f'\033[1;37m>>> Downloading (\033[1;33m{pkglist.index(pkg) +1}'
-          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     try:
         if '-v' in argv:
             subprocess.run(f'{downloader} {dl_link}',
@@ -76,7 +78,7 @@ def extract(pkg, extractor, dest_option, archive, argv, version, pkglist):
     """ Extract the package """
     logging.info(f'Extracting {pkg}...')
     print(f'\033[1;37m>>> Extracting (\033[1;33m{pkglist.index(pkg) +1}'
-          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     try:
         if '-v' in argv:
             if os.path.exists(f'/rpkg/{pkg}'):
@@ -113,7 +115,7 @@ def compiling(pkg, dir_name, build_dir, preconfig,
     """ Compiles the package """
     logging.info(f'Compiling {pkg}...')
     print(f'\033[1;37m>>> Compiling (\033[1;33m{pkglist.index(pkg) +1}'
-          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     try:
         if '-v' in argv:
             if build_dir:
@@ -216,11 +218,11 @@ def compiling(pkg, dir_name, build_dir, preconfig,
 
 
 def install(pkg, dir_name, install_command, check,
-            post_install, argv, build_dir, version, pkglist):
+            post_install, argv, build_dir, version, pkglist, post_nbr, pkgconf):
     """ Installs the package """
     logging.info(f'Installing {pkg}...')
     print(f'\033[1;37m>>> Installing (\033[1;33m{pkglist.index(pkg) +1}'
-          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     try:
         if '-v' in argv:
             if build_dir:
@@ -233,9 +235,11 @@ def install(pkg, dir_name, install_command, check,
                                cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
                                shell=True, check=True)
                 if post_install:
-                    subprocess.run(f'{post_install}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True)
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True)
             else:
                 if '-t' in argv:
                     if check:
@@ -246,13 +250,16 @@ def install(pkg, dir_name, install_command, check,
                                cwd=f"/rpkg/{pkg}/{dir_name}",
                                shell=True, check=True)
                 if post_install:
-                    subprocess.run(f'{post_install}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True)
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True)
                 if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
                     print(f'\033[1;37m>>> Running post-install scripts '
                           f'(\033[1;33m{pkglist.index(pkg) + 1}'
-                          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+                          f' of \033[1;33m{len(pkglist)}\033[1;37m)'
+                          f' \033[1;32m{pkg} == {version}\033[0;38m')
                     subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
                                    shell=True, check=True, capture_output=True)
         else:
@@ -266,9 +273,11 @@ def install(pkg, dir_name, install_command, check,
                                cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
                                shell=True, check=True, capture_output=True)
                 if post_install:
-                    subprocess.run(f'{post_install}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True, capture_output=True)
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True, capture_output=True)
             else:
                 if '-t' in argv:
                     if check:
@@ -279,13 +288,16 @@ def install(pkg, dir_name, install_command, check,
                                cwd=f"/rpkg/{pkg}/{dir_name}",
                                shell=True, check=True, capture_output=True)
                 if post_install:
-                    subprocess.run(f'{post_install}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True, capture_output=True)
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True, capture_output=True)
                 if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
                     print(f'\033[1;37m>>> Running post-install scripts '
                           f'(\033[1;33m{pkglist.index(pkg) + 1}'
-                          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}')
+                          f' of \033[1;33m{len(pkglist)}\033[1;37m)'
+                          f' \033[1;32m{pkg} == {version}\033[0;38m')
                     subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
                                    shell=True, check=True, capture_output=True)
     except subprocess.CalledProcessError:
