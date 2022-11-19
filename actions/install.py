@@ -25,6 +25,7 @@ def install(argv):
         else:
             pkgconf.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
         version = pkgconf['BASEINFO']['Version']
+        post_message = pkgconf['INSTALL']['PostMessage']
         if pkg not in installable:
             logging.error(f'{pkg}: Not in the repo.')
             sys.exit(f'\033[1;33mThe package {pkg} is not in the repo.')
@@ -51,5 +52,7 @@ def install(argv):
             logging.error(f'rbuild for {pkg} could not be executed properly')
             sys.exit(f'\033[1;31mThe rbuild for {pkg} could not be executed properly')
         logging.info(f'Installation of {pkg} complete.')
-    print('\n\033[1;37mThe installation has been a success')
+        if post_message:
+            print(post_message)
+    print('\n\033[1;37mThe installation has been a success!\n')
     sys.exit(0)

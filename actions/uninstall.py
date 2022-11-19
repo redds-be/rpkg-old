@@ -5,8 +5,10 @@
 Uninstall action
 """
 
+import os
 import sys
 import logging
+import configparser
 from rdestroy.rdestroy import main as rdestroy
 from utils.lists import convert_to_list
 
@@ -17,6 +19,12 @@ def uninstall(argv):
     for pkg in to_uninstall:
         installed = convert_to_list("/etc/rpkg/list/installed.list")
         version = installed[installed.index(pkg) + 1]
+        pkgconf = configparser.ConfigParser()
+        if os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
+            pkgconf.read(f'/etc/rpkg/pkgconf/custom/{pkg}.ini')
+        else:
+            pkgconf.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
+        post_message = pkgconf['INSTALL']['PostMessage']
         if pkg not in installed:
             logging.error(f'{pkg}: Not installed, nothing to do.')
             sys.exit(f'\033[1;37mThe package {pkg} is not installed!')
@@ -35,5 +43,7 @@ def uninstall(argv):
             logging.error(f'rdestroy for {pkg} could not be executed properly')
             sys.exit(f'\033[1;31mThe rdestroy for {pkg} could not be executed properly')
         logging.info(f'Uninstallation of {pkg} complete.')
-    print('\n\033[1;37mThe Uninstallation has been a success')
+        if post_message:
+            print(post_message)
+    print('\n\033[1;37mThe Uninstallation has been a success!\n')
     sys.exit(0)
