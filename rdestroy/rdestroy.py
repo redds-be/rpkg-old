@@ -34,10 +34,10 @@ def main(pkg, keep, argv, pkglist, version):
 
 def uninstall(pkg, dir_name, uninstall_command, build_dir, argv, pkglist, version):
     """ Uninstalls the package """
-    logging.info(f'Uninstalling {pkg}...')
-    print(f'\033[1;37m>>> Uninstalling (\033[1;33m{pkglist.index(pkg) +1}'
-          f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
     if uninstall_command:
+        logging.info(f'Uninstalling {pkg}...')
+        print(f'\033[1;37m>>> Uninstalling (\033[1;33m{pkglist.index(pkg) + 1}'
+              f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
         try:
             if '-v' in argv:
                 if build_dir:
@@ -61,7 +61,8 @@ def uninstall(pkg, dir_name, uninstall_command, build_dir, argv, pkglist, versio
             logging.error(f'{pkg}: Uninstallation failed')
             sys.exit(f'\033[1;31mThe package {pkg} could not be uninstalled')
     else:
-        logging.info(f"{pkg} can't be uninstalled using make, please do it manually")
+        logging.info(f"{pkg} not uninstallable via make")
+        sys.exit(f"\n\033[1;33m{pkg} can't be uninstalled using make, please do it manually")
 
 
 def clean(pkg, keep, argv, pkglist, version):
