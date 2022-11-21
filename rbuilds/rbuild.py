@@ -15,22 +15,18 @@ import configparser
 def main(pkg, argv, pkglist):
     """ Handles the build instructions """
     pkgconf = configparser.ConfigParser()
-    if '-ct' in argv:
-        pkgconf.read(f'/etc/rpkg/pkgconf/ct/{pkg}.ini')
-    elif '-cc' in argv:
-        pkgconf.read(f'/etc/rpkg/pkgconf/cc/{pkg}.ini')
+    if os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
+        pkgconf.read(f'/etc/rpkg/pkgconf/custom/{pkg}.ini')
     else:
-        if os.path.exists(f'/etc/rpkg/pkgconf/custom/{pkg}.ini'):
-            pkgconf.read(f'/etc/rpkg/pkgconf/custom/{pkg}.ini')
-        else:
-            pkgconf.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
+        pkgconf.read(f'/etc/rpkg/pkgconf/default/{pkg}.ini')
 
     version = pkgconf['BASEINFO']['Version']
 
     archive = pkgconf['EXTRACTION']['ArchiveName']
     downloader = pkgconf['DOWNLOAD']['Downloader']
+    downloader_pkg = downloader.split()[0]
     dl_nbr = int(pkgconf['BASEINFO']['MultipleLink'])
-    download(pkg, downloader, argv, version, pkglist, pkgconf, dl_nbr, archive)
+    download(pkg, downloader, argv, version, pkglist, pkgconf, dl_nbr, archive, downloader_pkg)
 
     extractor = pkgconf['EXTRACTION']['Extractor']
     dest_option = pkgconf['EXTRACTION']['DestinationOption']
@@ -65,26 +61,9 @@ def main(pkg, argv, pkglist):
     index(pkg, version, argv)
 
 
-def download(pkg, downloader, argv, version, pkglist, pkgconf, dl_nbr, archive):
+def download(pkg, downloader, argv, version, pkglist, pkgconf, dl_nbr, archive, downloader_pkg):
     """ Download the package """
-    if os.path.exists(f'$LFS/sources/{archive}'):
-        if '-v' in argv:
-            if os.path.exists(f'$LFS/rpkg/{pkg}'):
-                subprocess.run(f'/usr/bin/rm -rvf $LFS/rpkg/{pkg}',
-                               shell=True, check=True)
-            subprocess.run(f'/usr/bin/mkdir -v $LFS/rpkg/{pkg}',
-                           shell=True, check=True)
-            subprocess.run(f'/usr/bin/cp -v $LFS/sources/{archive} $LFS/rpkg/{pkg}',
-                           shell=True, check=True)
-        else:
-            if os.path.exists(f'$LFS/rpkg/{pkg}'):
-                subprocess.run(f'/usr/bin/rm -rf $LFS/rpkg/{pkg}',
-                               shell=True, check=True)
-            subprocess.run(f'/usr/bin/mkdir $LFS/rpkg/{pkg}',
-                           shell=True, check=True)
-            subprocess.run(f'/usr/bin/cp $LFS/sources/{archive} $LFS/rpkg/{pkg}',
-                           shell=True, check=True)
-    elif os.path.exists(f'/sources/{archive}'):
+    if os.path.exists(f'/sources/{archive}'):
         if '-v' in argv:
             if os.path.exists(f'/rpkg/{pkg}'):
                 subprocess.run(f'/usr/bin/rm -rvf /rpkg/{pkg}',
@@ -102,6 +81,12 @@ def download(pkg, downloader, argv, version, pkglist, pkgconf, dl_nbr, archive):
             subprocess.run(f'/usr/bin/cp /sources/{archive} /rpkg/{pkg}',
                            shell=True, check=True)
     else:
+        logging.info('Archive not found in /sources, checking deps for downloading')
+        if os.path.exists(f'{downloader_pkg}'):
+            logging.info(f'{downloader_pkg} is present on the system')
+        else:
+            logging.error(f'{downloader_pkg} not installed')
+            sys.exit(f'{downloader_pkg} is not installed, it is needed to download {pkg}')
         logging.info(f'Downloading {pkg}...')
         print(f'\033[1;37m>>> Downloading (\033[1;33m{pkglist.index(pkg) +1}'
               f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
@@ -127,28 +112,24 @@ def extract(pkg, extractor, dest_option, archive, argv, version, pkglist):
     logging.info(f'Extracting {pkg}...')
     print(f'\033[1;37m>>> Extracting (\033[1;33m{pkglist.index(pkg) +1}'
           f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
-    if os.path.exists(f'$LFS/sources/{archive}'):
+    if os.path.exists(f'/sources/{archive}'):
         try:
             if '-v' in argv:
-                subprocess.run(f'{extractor} $LFS/rpkg/{pkg}/{archive} '
-                               f'{dest_option} $LFS/rpkg/{pkg}',
-                               shell=True, check=True)
-            else:
-                subprocess.run(f'{extractor} $LFS/rpkg/{pkg}/{archive} '
-                               f'{dest_option} $LFS/rpkg/{pkg}',
-                               shell=True, check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            logging.error(f'{pkg}: extraction failed')
-            sys.exit(f'\033[1;31mThe archive for the package {pkg} could not be extracted')
-        logging.info(f'{pkg}: extracted.')
-    elif os.path.exists(f'/sources/{archive}'):
-        try:
-            if '-v' in argv:
-                subprocess.run(f'{extractor} /rpkg/{pkg}/{archive} '
+                if os.path.exists(f'/rpkg/{pkg}'):
+                    pass
+                else:
+                    subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}',
+                                   shell=True, check=True)
+                subprocess.run(f'{extractor} /sources/{archive} '
                                f'{dest_option} /rpkg/{pkg}',
                                shell=True, check=True)
             else:
-                subprocess.run(f'{extractor} /rpkg/{pkg}/{archive} '
+                if os.path.exists(f'/rpkg/{pkg}'):
+                    pass
+                else:
+                    subprocess.run(f'/usr/bin/mkdir /rpkg/{pkg}',
+                                   shell=True, check=True, capture_output=True)
+                subprocess.run(f'{extractor} /sources/{archive} '
                                f'{dest_option} /rpkg/{pkg}',
                                shell=True, check=True, capture_output=True)
         except subprocess.CalledProcessError:
@@ -194,330 +175,167 @@ def compiling(pkg, dir_name, build_dir, preconfig,
     logging.info(f'Compiling {pkg}...')
     print(f'\033[1;37m>>> Compiling (\033[1;33m{pkglist.index(pkg) +1}'
           f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
-    if os.path.exists('$LFS'):
-        try:
-            if '-v' in argv:
-                if build_dir:
-                    if os.path.exists(f'$LFS/rpkg/{pkg}/{dir_name}/{build_dir}'):
-                        pass
-                    else:
-                        subprocess.run(f'/usr/bin/mkdir -pv /rpkg/{pkg}/{dir_name}/{build_dir}',
-                                       shell=True, check=True)
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr + 1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                    if configure:
-                        subprocess.run(f'{configure}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True)
+    try:
+        if '-v' in argv:
+            if build_dir:
+                if os.path.exists(f'/rpkg/{pkg}/{dir_name}/{build_dir}'):
+                    pass
                 else:
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr + 1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True)
+                    subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
+                                   shell=True, check=True)
+                if preconfig:
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True)
                     if configure:
                         subprocess.run(f'{configure}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
                                        shell=True, check=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True)
+                if configure:
+                    subprocess.run(f'{configure}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True)
+                if '-j' in argv:
+                    cores = argv[argv.index('-j') + 1]
+                    subprocess.run(f'{compile_command} -j{cores}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
+                            subprocess.run(f'{command}',
+                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                           shell=True, check=True)
+                else:
+                    subprocess.run(f'{compile_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
+                            subprocess.run(f'{command}',
+                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                           shell=True, check=True)
             else:
-                if build_dir:
-                    if os.path.exists(f'$LFS/rpkg/{pkg}/{dir_name}/{build_dir}'):
-                        pass
-                    else:
-                        subprocess.run(f'$LFS/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
-                                       shell=True, check=True, capture_output=True)
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr + 1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
+                if preconfig:
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True)
                     if configure:
                         subprocess.run(f'{configure}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True, capture_output=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True, capture_output=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True, capture_output=True)
-                else:
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr + 1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-                    if configure:
-                        subprocess.run(f'{configure}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True, capture_output=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True, capture_output=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr + 1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            logging.error(f'{pkg}: compiling failed')
-            sys.exit(f'\033[1;31mThe package {pkg} could not be compiled')
-        logging.info(f'{pkg}: compiled.')
-    else:
-        try:
-            if '-v' in argv:
-                if build_dir:
-                    if os.path.exists(f'/rpkg/{pkg}/{dir_name}/{build_dir}'):
-                        pass
-                    else:
-                        subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
                                        shell=True, check=True)
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr+1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                    if configure:
-                        subprocess.run(f'{configure}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True)
-                else:
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr+1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                if configure:
+                    subprocess.run(f'{configure}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True)
+                if '-j' in argv:
+                    cores = argv[argv.index('-j') + 1]
+                    subprocess.run(f'{compile_command} -j{cores}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
                             subprocess.run(f'{command}',
                                            cwd=f"/rpkg/{pkg}/{dir_name}",
                                            shell=True, check=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
+                else:
+                    subprocess.run(f'{compile_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
+                            subprocess.run(f'{command}',
                                            cwd=f"/rpkg/{pkg}/{dir_name}",
                                            shell=True, check=True)
+        else:
+            if build_dir:
+                if os.path.exists(f'/rpkg/{pkg}/{dir_name}/{build_dir}'):
+                    pass
+                else:
+                    subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
+                                   shell=True, check=True, capture_output=True)
+                if preconfig:
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True, capture_output=True)
                     if configure:
                         subprocess.run(f'{configure}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True)
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True, capture_output=True)
+                if configure:
+                    subprocess.run(f'{configure}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True, capture_output=True)
+                if '-j' in argv:
+                    cores = argv[argv.index('-j') + 1]
+                    subprocess.run(f'{compile_command} -j{cores}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True, capture_output=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
+                            subprocess.run(f'{command}',
+                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                           shell=True, check=True, capture_output=True)
+                else:
+                    subprocess.run(f'{compile_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                   shell=True, check=True, capture_output=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
+                            subprocess.run(f'{command}',
+                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                           shell=True, check=True, capture_output=True)
             else:
-                if build_dir:
-                    if os.path.exists(f'/rpkg/{pkg}/{dir_name}/{build_dir}'):
-                        pass
-                    else:
-                        subprocess.run(f'/usr/bin/mkdir -v /rpkg/{pkg}/{dir_name}/{build_dir}',
+                if preconfig:
+                    for cmd_nbr in range(1, pre_nbr+1):
+                        command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
                                        shell=True, check=True, capture_output=True)
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr+1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
                     if configure:
                         subprocess.run(f'{configure}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
                                        shell=True, check=True, capture_output=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True, capture_output=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                               shell=True, check=True, capture_output=True)
+                if configure:
+                    subprocess.run(f'{configure}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True, capture_output=True)
+                if '-j' in argv:
+                    cores = argv[argv.index('-j') + 1]
+                    subprocess.run(f'{compile_command} -j{cores}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True, capture_output=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
+                            subprocess.run(f'{command}',
+                                           cwd=f"/rpkg/{pkg}/{dir_name}",
+                                           shell=True, check=True, capture_output=True)
                 else:
-                    if preconfig:
-                        for cmd_nbr in range(1, pre_nbr+1):
-                            command = pkgconf['COMPILE'][f'PreConfigure{cmd_nbr}']
+                    subprocess.run(f'{compile_command}',
+                                   cwd=f"/rpkg/{pkg}/{dir_name}",
+                                   shell=True, check=True, capture_output=True)
+                    if post_compile:
+                        for cmd_nbr in range(1, post_compile_nbr+1):
+                            command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
                             subprocess.run(f'{command}',
                                            cwd=f"/rpkg/{pkg}/{dir_name}",
                                            shell=True, check=True, capture_output=True)
-                        if configure:
-                            subprocess.run(f'{configure}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-                    if configure:
-                        subprocess.run(f'{configure}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True, capture_output=True)
-                    if '-j' in argv:
-                        cores = argv[argv.index('-j') + 1]
-                        subprocess.run(f'{compile_command} -j{cores}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True, capture_output=True)
-                    else:
-                        subprocess.run(f'{compile_command}',
-                                       cwd=f"/rpkg/{pkg}/{dir_name}",
-                                       shell=True, check=True, capture_output=True)
-                        if post_compile:
-                            for cmd_nbr in range(1, post_compile_nbr+1):
-                                command = pkgconf['COMPILE'][f'PostCompile{cmd_nbr}']
-                                subprocess.run(f'{command}',
-                                               cwd=f"/rpkg/{pkg}/{dir_name}",
-                                               shell=True, check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            logging.error(f'{pkg}: compiling failed')
-            sys.exit(f'\033[1;31mThe package {pkg} could not be compiled')
-        logging.info(f'{pkg}: compiled.')
+    except subprocess.CalledProcessError:
+        logging.error(f'{pkg}: compiling failed')
+        sys.exit(f'\033[1;31mThe package {pkg} could not be compiled')
+    logging.info(f'{pkg}: compiled.')
 
 
 def install(pkg, dir_name, install_command, check,
@@ -526,156 +344,87 @@ def install(pkg, dir_name, install_command, check,
     logging.info(f'Installing {pkg}...')
     print(f'\033[1;37m>>> Installing (\033[1;33m{pkglist.index(pkg) +1}'
           f' of \033[1;33m{len(pkglist)}\033[1;37m) \033[1;32m{pkg} == {version}\033[0;38m')
-    if os.path.exists('$LFS'):
-        try:
-            if '-v' in argv:
-                if build_dir:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr + 1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                else:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr + 1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True)
+    try:
+        if '-v' in argv:
+            if build_dir:
+                if '-t' in argv:
+                    if check:
+                        subprocess.run(f'{check}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True)
+                subprocess.run(f'{install_command}',
+                               cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                               shell=True, check=True)
+                if post_install:
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True)
             else:
-                if build_dir:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
+                if '-t' in argv:
+                    if check:
+                        subprocess.run(f'{check}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True)
+                subprocess.run(f'{install_command}',
+                               cwd=f"/rpkg/{pkg}/{dir_name}",
+                               shell=True, check=True)
+                if post_install:
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True)
+                if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
+                    print(f'\033[1;37m>>> Running post-install scripts '
+                          f'(\033[1;33m{pkglist.index(pkg) + 1}'
+                          f' of \033[1;33m{len(pkglist)}\033[1;37m)'
+                          f' \033[1;32m{pkg} == {version}\033[0;38m')
+                    subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
                                    shell=True, check=True, capture_output=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr + 1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
-                else:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True, capture_output=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr + 1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"$LFS/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            logging.error(f'{pkg}: Installation failed')
-            sys.exit(f'\033[1;31mThe package {pkg} could not be installed')
-        logging.info(f'{pkg}: installed')
-    else:
-        try:
-            if '-v' in argv:
-                if build_dir:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr+1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True)
-                else:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr+1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True)
-                    if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
-                        print(f'\033[1;37m>>> Running post-install scripts '
-                              f'(\033[1;33m{pkglist.index(pkg) + 1}'
-                              f' of \033[1;33m{len(pkglist)}\033[1;37m)'
-                              f' \033[1;32m{pkg} == {version}\033[0;38m')
-                        subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
+        else:
+            if build_dir:
+                if '-t' in argv:
+                    if check:
+                        subprocess.run(f'{check}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                                       shell=True, check=True, capture_output=True)
+                subprocess.run(f'{install_command}',
+                               cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
+                               shell=True, check=True, capture_output=True)
+                if post_install:
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
                                        shell=True, check=True, capture_output=True)
             else:
-                if build_dir:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                   shell=True, check=True, capture_output=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr+1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}/{build_dir}",
-                                           shell=True, check=True, capture_output=True)
-                else:
-                    if '-t' in argv:
-                        if check:
-                            subprocess.run(f'{check}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-                    subprocess.run(f'{install_command}',
-                                   cwd=f"/rpkg/{pkg}/{dir_name}",
-                                   shell=True, check=True, capture_output=True)
-                    if post_install:
-                        for cmd_nbr in range(1, post_nbr+1):
-                            command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
-                            subprocess.run(f'{command}',
-                                           cwd=f"/rpkg/{pkg}/{dir_name}",
-                                           shell=True, check=True, capture_output=True)
-                    if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
-                        print(f'\033[1;37m>>> Running post-install scripts '
-                              f'(\033[1;33m{pkglist.index(pkg) + 1}'
-                              f' of \033[1;33m{len(pkglist)}\033[1;37m)'
-                              f' \033[1;32m{pkg} == {version}\033[0;38m')
-                        subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
+                if '-t' in argv:
+                    if check:
+                        subprocess.run(f'{check}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
                                        shell=True, check=True, capture_output=True)
-        except subprocess.CalledProcessError:
-            logging.error(f'{pkg}: Installation failed')
-            sys.exit(f'\033[1;31mThe package {pkg} could not be installed')
-        logging.info(f'{pkg}: installed')
+                subprocess.run(f'{install_command}',
+                               cwd=f"/rpkg/{pkg}/{dir_name}",
+                               shell=True, check=True, capture_output=True)
+                if post_install:
+                    for cmd_nbr in range(1, post_nbr+1):
+                        command = pkgconf['INSTALL'][f'PostInstall{cmd_nbr}']
+                        subprocess.run(f'{command}',
+                                       cwd=f"/rpkg/{pkg}/{dir_name}",
+                                       shell=True, check=True, capture_output=True)
+                if os.path.exists(f'/etc/rpkg/scripts/{pkg}.sh'):
+                    print(f'\033[1;37m>>> Running post-install scripts '
+                          f'(\033[1;33m{pkglist.index(pkg) + 1}'
+                          f' of \033[1;33m{len(pkglist)}\033[1;37m)'
+                          f' \033[1;32m{pkg} == {version}\033[0;38m')
+                    subprocess.run(f'/usr/bin/bash /etc/rpkg/scripts/{pkg}.sh',
+                                   shell=True, check=True, capture_output=True)
+    except subprocess.CalledProcessError:
+        logging.error(f'{pkg}: Installation failed')
+        sys.exit(f'\033[1;31mThe package {pkg} could not be installed')
+    logging.info(f'{pkg}: installed')
 
 
 def index(pkg, version, argv):
